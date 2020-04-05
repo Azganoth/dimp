@@ -1,0 +1,12 @@
+{
+	"extends": "../tsconfig",
+	"compilerOptions": {
+		"module": "ESNext",
+		"lib": ["ES2020", "DOM", "DOM.Iterable"],
+		"baseUrl": "../",
+		"paths": {
+			"app": ["app"]
+		}
+	},
+	"exclude": []
+}

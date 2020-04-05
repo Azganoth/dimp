@@ -1,0 +1,5 @@
+# Hide .yarn from GitHub's language statistics
+.yarn/** linguist-vendored
+
+# Mark .pnp.js as a generated binary to prevent git from trying to merge it
+/.pnp.js binary linguist-generated
