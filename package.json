@@ -13,6 +13,7 @@
 		"type": "tsc -p app --noEmit"
 	},
 	"devDependencies": {
+		"@ant-design/icons": "^4.0.5",
 		"@types/chalk": "^2.2.0",
 		"@types/copy-webpack-plugin": "^5.0.0",
 		"@types/fs-extra": "^8.1.0",
@@ -24,6 +25,7 @@
 		"@types/terser-webpack-plugin": "^2.2.0",
 		"@types/webpack": "^4.41.10",
 		"@types/xo": "^0.28.0",
+		"antd": "^4.1.1",
 		"chalk": "^4.0.0",
 		"copy-webpack-plugin": "^5.1.1",
 		"css-loader": "^3.5.1",

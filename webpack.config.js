@@ -68,6 +68,10 @@ module.exports = (webpackEnv) => {
 						test: /[/\\]node_modules[/\\](react|react-dom)/,
 						priority: 20,
 					},
+					antd: {
+						test: /[/\\]node_modules[/\\]antd/,
+						priority: 10,
+					},
 				},
 			},
 		},
