@@ -1,4 +1,4 @@
-const { app, BrowserWindow } = require('electron')
+const { app, BrowserWindow, shell } = require('electron')
 const path = require('path')
 
 let win
@@ -16,6 +16,12 @@ app.once('ready', () => {
 	})
 
 	win.loadFile(path.resolve(__dirname, 'public/index.html'))
+
+	// prevent links from loading inside the app
+	win.webContents.on('will-navigate', (e, url) => {
+		e.preventDefault()
+		shell.openExternal(url)
+	})
 
 	win.once('closed', () => {
 		win = undefined

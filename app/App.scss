@@ -1,0 +1,60 @@
+$header-height: 4rem;
+$striped-background: repeating-linear-gradient(-45deg, #f9f9f9, #f9f9f9 3px, white 3px, white 6px);
+
+#root {
+	display: flex;
+	flex-direction: column;
+	height: 100vh;
+}
+
+.header {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	padding: 0.5rem;
+	height: $header-height;
+
+	.header-action {
+		min-width: 5em;
+	}
+
+	.pixel-value {
+		border-radius: 1rem;
+		width: 4rem;
+		height: 2.5rem;
+		color: white;
+		font-size: 1.5rem;
+		font-weight: bold;
+		text-align: center;
+	}
+
+	#r {
+		background-color: #f5222d;
+	}
+
+	#g {
+		background-color: #52c41a;
+	}
+
+	#b {
+		background-color: #1890ff;
+	}
+
+	#a {
+		color: black;
+		background: $striped-background;
+	}
+}
+
+.content {
+	display: flex;
+	height: calc(100% - #{$header-height});
+
+	.canvas {
+		overflow: auto;
+		position: relative;
+		width: 33.3%;
+		height: 100%;
+		background: $striped-background;
+	}
+}

@@ -1,0 +1,265 @@
+import React, { useState } from 'react'
+import { remote } from 'electron'
+import path from 'path'
+import fs from 'fs-extra'
+import { Button, Collapse, Divider, Drawer, Typography, message } from 'antd'
+import { DownloadOutlined, GithubOutlined, UploadOutlined } from '@ant-design/icons'
+import './Toolbox.scss'
+
+const { Panel } = Collapse
+const { Text } = Typography
+
+const ERROR_MESSAGE = {
+	COMMON: 'Desculpe, ocorreu um erro, tente novamente. Caso o erro persista reinicie a aplicação e/ou abra um issue.',
+	INTERNAL:
+		'Desculpe, ocorreu um erro interno, reinicie a aplicação e tente novamente. Caso o erro persista abra um issue.',
+}
+const IMAGE_EXTENSIONS = ['png', 'jpeg', 'jpg', 'bmp', 'tiff', 'tif']
+
+type ToolboxProps = {
+	visible: boolean
+	onClose?: () => void
+	canvas1Ref: React.MutableRefObject<HTMLCanvasElement | null>
+	canvas2Ref: React.MutableRefObject<HTMLCanvasElement | null>
+	canvasResultRef: React.MutableRefObject<HTMLCanvasElement | null>
+}
+
+const Toolbox = ({ visible, onClose, canvas1Ref, canvas2Ref, canvasResultRef }: ToolboxProps) => {
+	const [busy, setBusy] = useState(false)
+
+	// basic upload/download
+	const upload = async ({ current: canvas }: React.MutableRefObject<HTMLCanvasElement | null>) => {
+		if (!canvas) {
+			message.error(ERROR_MESSAGE.INTERNAL)
+			return
+		}
+
+		const info = await remote.dialog.showOpenDialog({
+			title: `Selecione uma imagem para o ${canvas.title}`,
+			buttonLabel: 'Selecionar',
+			filters: [{ name: 'Imagens', extensions: IMAGE_EXTENSIONS }],
+		})
+
+		if (info.canceled) {
+			return
+		}
+
+		const filePath = info.filePaths[0]
+
+		if ((await fs.stat(filePath)).size > 262144000) {
+			message.warn(
+				'A imagem selecionada tem tamanho maior que 256mb e, por questões de performance, não será carregada.'
+			)
+			return
+		}
+
+		return new Promise((resolve, reject) => {
+			const image = new Image()
+
+			image.addEventListener('load', () => {
+				canvas.width = image.width
+				canvas.height = image.height
+				canvas.getContext('2d')?.drawImage(image, 0, 0)
+
+				message.success(`A imagem '${path.basename(filePath)}' foi adicionada com sucesso ao ${canvas.title}.`)
+				resolve()
+			})
+
+			image.addEventListener('error', (error) => {
+				message.error(`A imagem '${path.basename(filePath)}' parece estar corrompida ou não é válida.`)
+				reject(error)
+			})
+
+			image.src = filePath
+		})
+	}
+
+	const download = async ({ current: canvas }: React.MutableRefObject<HTMLCanvasElement | null>) => {
+		if (!canvas) {
+			message.error(ERROR_MESSAGE.INTERNAL)
+			return
+		}
+
+		if (canvas.width < 1 && canvas.height < 1) {
+			message.info(`Não há imagem no ${canvas.title}.`)
+			return
+		}
+
+		const info = await remote.dialog.showSaveDialog({
+			title: `Escolha um local e um nome para salvar a imagem do ${canvas.title}`,
+			filters: [
+				{ name: 'Imagem PNG', extensions: ['png'] },
+				{ name: 'Imagem JPEG', extensions: ['jpg', 'jpeg'] },
+				{ name: 'Imagem BMP', extensions: ['bmp'] },
+				{ name: 'Imagem TIFF', extensions: ['tif', 'tiff'] },
+			],
+		})
+
+		if (info.canceled) {
+			return
+		}
+
+		const { filePath } = info
+
+		if (!filePath) {
+			message.warn('Por favor, informe um nome ao salvar a imagem.')
+			return
+		}
+
+		const choosenExtension = path.extname(filePath).replace('.', '')
+
+		if (!choosenExtension) {
+			message.warn('Por favor, informe um nome ao salvar a imagem.')
+			return
+		}
+
+		// get the correct mime type
+		const mimeType = choosenExtension === 'jpg' ? 'jpeg' : choosenExtension === 'tif' ? 'tiff' : choosenExtension
+
+		// base64 data string without data type
+		const imageBase64 = canvas.toDataURL(`image/${mimeType}`).replace(`data:image/${mimeType};base64,`, '')
+
+		await fs.writeFile(filePath, Buffer.from(imageBase64, 'base64'))
+		message.success(`A imagem do ${canvas.title} foi salva com sucesso.`)
+	}
+
+	return (
+		<Drawer
+			className="toolbox"
+			title="Caixa de ferramentas"
+			placement="left"
+			width={584}
+			visible={visible}
+			onClose={onClose}
+		>
+			<div className="basic-actions">
+				<div className="basic-actions-row">
+					<Button
+						className="basic-action"
+						type="dashed"
+						size="large"
+						icon={<UploadOutlined />}
+						loading={busy}
+						onClick={async () => {
+							setBusy(true)
+							try {
+								await upload(canvas1Ref)
+							} finally {
+								setBusy(false)
+							}
+						}}
+					>
+						Carregar imagem 1!
+					</Button>
+					<Button
+						className="basic-action"
+						size="large"
+						icon={<DownloadOutlined />}
+						loading={busy}
+						onClick={async () => {
+							setBusy(true)
+							try {
+								await download(canvas1Ref)
+							} finally {
+								setBusy(false)
+							}
+						}}
+					>
+						Salvar imagem 1!
+					</Button>
+				</div>
+
+				<div className="basic-actions-row">
+					<Button
+						className="basic-action"
+						type="dashed"
+						size="large"
+						icon={<UploadOutlined />}
+						loading={busy}
+						onClick={async () => {
+							setBusy(true)
+							try {
+								await upload(canvas2Ref)
+							} finally {
+								setBusy(false)
+							}
+						}}
+					>
+						Carregar imagem 2!
+					</Button>
+					<Button
+						className="basic-action"
+						size="large"
+						icon={<DownloadOutlined />}
+						loading={busy}
+						onClick={async () => {
+							setBusy(true)
+							try {
+								await download(canvas2Ref)
+							} finally {
+								setBusy(false)
+							}
+						}}
+					>
+						Salvar imagem 2!
+					</Button>
+				</div>
+
+				<Button
+					className="basic-action"
+					type="primary"
+					size="large"
+					icon={<DownloadOutlined />}
+					loading={busy}
+					onClick={async () => {
+						setBusy(true)
+						try {
+							await download(canvasResultRef)
+						} finally {
+							setBusy(false)
+						}
+					}}
+				>
+					Salvar imagem resultado!
+				</Button>
+			</div>
+
+			<Divider />
+
+			<Collapse accordion>
+				<Panel key="1" header="Tons de cinza">
+					<p>fg dg dddfg d dfgfdg</p>
+				</Panel>
+				<Panel key="2" header="Limiarização">
+					<p>fjsdjh sfh sshdf hsdu hsi</p>
+				</Panel>
+				<Panel key="3" header="Negativa">
+					<p>zoxco zjzoxjzo zox jz</p>
+				</Panel>
+				<Panel key="4" header="Adição / Subtração">
+					<p>em, qwp mepqwm pqwm afg</p>
+				</Panel>
+				<Panel key="5" header="Ruídos">
+					<p>ofdgo fdgodod f aa´k</p>
+				</Panel>
+				<Panel key="6" header="Equalização de histograma">
+					<p>sdfkl smn sdoqwo xcfgjh</p>
+				</Panel>
+			</Collapse>
+
+			<div className="credits">
+				<Text id="author-info">Ademir J. Ferreira Júnior &lt;ademirj.ferreirajunior@gmail.com&gt;</Text>
+				<Button
+					id="repo-link"
+					type="link"
+					shape="round"
+					size="large"
+					icon={<GithubOutlined />}
+					href="https://github.com/Azganoth/dimp"
+				/>
+			</div>
+		</Drawer>
+	)
+}
+
+export default Toolbox
