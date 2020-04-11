@@ -47,10 +47,10 @@ const App = () => {
 	const canvasResultRef = useRef<HTMLCanvasElement | null>(null)
 
 	const canvasMouseMove = ({ nativeEvent: { offsetX, offsetY, target } }: React.MouseEvent<HTMLCanvasElement>) => {
-		const canvas = (target as HTMLCanvasElement)?.getContext('2d')
+		const canvas = target as HTMLCanvasElement | null
 
 		if (canvas) {
-			const [r, g, b, a] = canvas.getImageData(offsetX, offsetY, 1, 1).data
+			const [r, g, b, a] = canvas.getContext('2d')!.getImageData(offsetX, offsetY, 1, 1).data
 			setPixelShowcaseValue({ r, g, b, a })
 		} else {
 			setPixelShowcaseValue()

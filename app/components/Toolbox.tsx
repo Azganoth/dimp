@@ -61,7 +61,7 @@ const Toolbox = ({ visible, onClose, canvas1Ref, canvas2Ref, canvasResultRef }: 
 			image.addEventListener('load', () => {
 				canvas.width = image.width
 				canvas.height = image.height
-				canvas.getContext('2d')?.drawImage(image, 0, 0)
+				canvas.getContext('2d')!.drawImage(image, 0, 0)
 
 				message.success(`A imagem '${path.basename(filePath)}' foi adicionada com sucesso ao ${canvas.title}.`)
 				resolve()
