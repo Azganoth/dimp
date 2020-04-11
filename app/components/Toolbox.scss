@@ -35,3 +35,15 @@
 		}
 	}
 }
+
+.tool {
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	align-items: center;
+	text-align: center;
+
+	.label {
+		font-size: 1.5rem;
+	}
+}

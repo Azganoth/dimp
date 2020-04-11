@@ -2,9 +2,11 @@ import React, { useState } from 'react'
 import { remote } from 'electron'
 import path from 'path'
 import fs from 'fs-extra'
-import { Button, Collapse, Divider, Drawer, Typography, message } from 'antd'
-import { DownloadOutlined, GithubOutlined, UploadOutlined } from '@ant-design/icons'
+import { Button, Collapse, Divider, Drawer, Space, Typography, message } from 'antd'
+import { DownloadOutlined, ExperimentOutlined, GithubOutlined, UploadOutlined } from '@ant-design/icons'
 import './Toolbox.scss'
+
+import PercentInput from './ui/PercentInput'
 
 const { Panel } = Collapse
 const { Text } = Typography
@@ -123,6 +125,45 @@ const Toolbox = ({ visible, onClose, canvas1Ref, canvas2Ref, canvasResultRef }: 
 		message.success(`A imagem do ${canvas.title} foi salva com sucesso.`)
 	}
 
+	// greyscale
+
+	const [greyscaleR, setGreyscaleR] = useState(0)
+	const [greyscaleG, setGreyscaleG] = useState(0)
+	const [greyscaleB, setGreyscaleB] = useState(0)
+
+	const greyscale = async (
+		{ current: canvas }: React.MutableRefObject<HTMLCanvasElement | null>,
+		weighted?: boolean
+	) => {
+		const { current: canvasResult } = canvasResultRef
+		if (!canvas || !canvasResult) {
+			message.error(ERROR_MESSAGE.INTERNAL)
+			return
+		}
+
+		if (canvas.width < 1 && canvas.height < 1) {
+			message.info(`Não há imagem no ${canvas.title}.`)
+			return
+		}
+
+		const imageData = canvas.getContext('2d')!.getImageData(0, 0, canvas.width, canvas.height)
+
+		const { data } = imageData
+		// transverse every pixel in the image ([r,g,b,a])
+		for (let i = 0; i < data.length; i += 4) {
+			const average = weighted
+				? (data[i] * greyscaleR + data[i + 1] * greyscaleG + data[i + 2] * greyscaleB) / 300
+				: (data[i] + data[i + 1] + data[i + 2]) / 3
+			data[i] = average
+			data[i + 1] = average
+			data[i + 2] = average
+		}
+
+		canvasResult.width = canvas.width
+		canvasResult.height = canvas.height
+		canvasResult.getContext('2d')!.putImageData(imageData, 0, 0)
+	}
+
 	return (
 		<Drawer
 			className="toolbox"
@@ -228,7 +269,52 @@ const Toolbox = ({ visible, onClose, canvas1Ref, canvas2Ref, canvasResultRef }: 
 
 			<Collapse accordion>
 				<Panel key="1" header="Tons de cinza">
-					<p>fg dg dddfg d dfgfdg</p>
+					<div className="tool">
+						<Button
+							type="primary"
+							icon={<ExperimentOutlined />}
+							loading={busy}
+							onClick={async () => {
+								setBusy(true)
+								try {
+									await greyscale(canvas1Ref)
+								} finally {
+									setBusy(false)
+								}
+							}}
+						>
+							Média aritmética
+						</Button>
+
+						<Divider />
+
+						<Space size="large" direction="vertical">
+							<Space size="large">
+								<Text className="label">R</Text>
+								<PercentInput size="large" value={greyscaleR} onChange={setGreyscaleR} />
+								<Text className="label">G</Text>
+								<PercentInput size="large" value={greyscaleG} onChange={setGreyscaleG} />
+								<Text className="label">B</Text>
+								<PercentInput size="large" value={greyscaleB} onChange={setGreyscaleB} />
+							</Space>
+
+							<Button
+								type="primary"
+								icon={<ExperimentOutlined />}
+								loading={busy}
+								onClick={async () => {
+									setBusy(true)
+									try {
+										await greyscale(canvas1Ref, true)
+									} finally {
+										setBusy(false)
+									}
+								}}
+							>
+								Média ponderada
+							</Button>
+						</Space>
+					</div>
 				</Panel>
 				<Panel key="2" header="Limiarização">
 					<p>fjsdjh sfh sshdf hsdu hsi</p>
