@@ -30,6 +30,7 @@ const Toolbox = ({ visible, onClose, canvas1Ref, canvas2Ref, canvasResultRef }: 
 	const [busy, setBusy] = useState(false)
 
 	// basic upload/download
+
 	const upload = async ({ current: canvas }: React.MutableRefObject<HTMLCanvasElement | null>) => {
 		if (!canvas) {
 			message.error(ERROR_MESSAGE.INTERNAL)
