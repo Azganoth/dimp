@@ -1,6 +1,6 @@
 {
 	"name": "dimp",
-	"version": "0.0.1",
+	"version": "0.1.0",
 	"description": "App for Digital Image Processing algorithms testing.",
 	"author": "Ademir J. Ferreira Júnior <ademirj.ferreirajunior@gmail.com>",
 	"repository": "github:Azganoth/dimp",
