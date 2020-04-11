@@ -7,6 +7,7 @@ module.exports = {
 		'no-console': 'warn',
 
 		'@typescript-eslint/explicit-function-return-type': 'off',
+		'@typescript-eslint/prefer-readonly-parameter-types': 'off',
 
 		'import/no-extraneous-dependencies': 'off',
 		'import/no-unassigned-import': 'off',
