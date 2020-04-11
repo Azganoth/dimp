@@ -155,7 +155,7 @@ module.exports = (webpackEnv) => {
 		resolve: {
 			extensions: ['.js', '.jsx', '.ts', '.tsx'],
 			alias: {
-				app: '.',
+				app: path.resolve(__dirname, 'app'),
 			},
 		},
 	}
