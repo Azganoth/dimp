@@ -2,10 +2,24 @@ import React, { useState } from 'react'
 import { remote } from 'electron'
 import path from 'path'
 import fs from 'fs-extra'
-import { Button, Col, Collapse, Divider, Drawer, Row, Space, Tooltip, Typography, message } from 'antd'
+import {
+	Button,
+	Col,
+	Collapse,
+	Divider,
+	Drawer,
+	InputNumber,
+	Row,
+	Slider,
+	Space,
+	Tooltip,
+	Typography,
+	message,
+} from 'antd'
 import { DownloadOutlined, ExperimentOutlined, GithubOutlined, UploadOutlined } from '@ant-design/icons'
 import './Toolbox.scss'
 
+import { normalizeIntegerInput } from 'app/utils/normalize'
 import PercentInput from './ui/PercentInput'
 
 const { Panel } = Collapse
@@ -163,6 +177,37 @@ const Toolbox = ({ visible, onClose, canvas1Ref, canvas2Ref, canvasResultRef }: 
 			data[i] = average
 			data[i + 1] = average
 			data[i + 2] = average
+		}
+
+		canvasResult.width = canvas.width
+		canvasResult.height = canvas.height
+		canvasResult.getContext('2d')!.putImageData(imageData, 0, 0)
+	}
+
+	// thresh
+
+	const [threshValue, setThreshValue] = useState(0)
+
+	const thresh = async ({ current: canvas }: React.MutableRefObject<HTMLCanvasElement | null>) => {
+		const { current: canvasResult } = canvasResultRef
+		if (!canvas || !canvasResult) {
+			message.error(MESSAGES.ERROR.internal)
+			return
+		}
+
+		if (!canvas.width && !canvas.height) {
+			message.info(MESSAGES.INFO.thereIsNothingOn(canvas.title))
+			return
+		}
+
+		const imageData = canvas.getContext('2d')!.getImageData(0, 0, canvas.width, canvas.height)
+
+		const { data } = imageData
+		for (let i = 0; i < data.length; i += 4) {
+			const pxValue = (data[i] + data[i + 1] + data[i + 2]) / 3 > threshValue ? 255 : 0
+			data[i] = pxValue
+			data[i + 1] = pxValue
+			data[i + 2] = pxValue
 		}
 
 		canvasResult.width = canvas.width
@@ -350,7 +395,52 @@ const Toolbox = ({ visible, onClose, canvas1Ref, canvas2Ref, canvasResultRef }: 
 					</Row>
 				</Panel>
 				<Panel key="2" header="Limiarização">
-					<p>fjsdjh sfh sshdf hsdu hsi</p>
+					<Row gutter={[32, 24]} justify="center">
+						<Col span={12}>
+							<Slider
+								min={0}
+								max={255}
+								marks={{ 0: '0', 63: '63', 127: '127', 191: '191', 255: '255' }}
+								value={threshValue}
+								onChange={(value) => {
+									setThreshValue(typeof value === 'number' ? value : value[0])
+								}}
+							/>
+						</Col>
+						<Col span={8}>
+							<InputNumber
+								size="large"
+								min={0}
+								max={255}
+								parser={(value) => normalizeIntegerInput(value, 0, 255)}
+								value={threshValue}
+								onChange={(value) => {
+									setThreshValue(value ?? 0)
+								}}
+							/>
+						</Col>
+					</Row>
+
+					<Row justify="center">
+						<Col>
+							<Button
+								type="primary"
+								size="large"
+								icon={<ExperimentOutlined />}
+								loading={busy}
+								onClick={async () => {
+									setBusy(true)
+									try {
+										await thresh(canvas1Ref)
+									} finally {
+										setBusy(false)
+									}
+								}}
+							>
+								Aplicar limiarização
+							</Button>
+						</Col>
+					</Row>
 				</Panel>
 				<Panel key="3" header="Negativa">
 					<p>zoxco zjzoxjzo zox jz</p>
