@@ -11,12 +11,22 @@ import PercentInput from './ui/PercentInput'
 const { Panel } = Collapse
 const { Text } = Typography
 
-const ERROR_MESSAGE = {
-	COMMON: 'Desculpe, ocorreu um erro, tente novamente. Caso o erro persista reinicie a aplicação e/ou abra um issue.',
-	INTERNAL:
-		'Desculpe, ocorreu um erro interno, reinicie a aplicação e tente novamente. Caso o erro persista abra um issue.',
+const MESSAGES = {
+	ERROR: {
+		internal:
+			'Desculpe, ocorreu um erro interno, reinicie a aplicação e tente novamente. Caso o erro persista abra um issue.',
+	},
+	INFO: {
+		thereIsNothingOn: (subject: string) => `Não há nada no ${subject}.`,
+	},
 }
-const IMAGE_EXTENSIONS = ['png', 'jpeg', 'jpg', 'bmp', 'tiff', 'tif']
+
+const SUPPORTED_IMAGE_TYPES = [
+	{ name: 'Imagem PNG', extensions: ['png'] },
+	{ name: 'Imagem JPEG', extensions: ['jpg', 'jpeg'] },
+	{ name: 'Imagem BMP', extensions: ['bmp'] },
+	{ name: 'Imagem TIFF', extensions: ['tif', 'tiff'] },
+]
 
 type ToolboxProps = {
 	visible: boolean
@@ -33,14 +43,14 @@ const Toolbox = ({ visible, onClose, canvas1Ref, canvas2Ref, canvasResultRef }: 
 
 	const upload = async ({ current: canvas }: React.MutableRefObject<HTMLCanvasElement | null>) => {
 		if (!canvas) {
-			message.error(ERROR_MESSAGE.INTERNAL)
+			message.error(MESSAGES.ERROR.internal)
 			return
 		}
 
 		const info = await remote.dialog.showOpenDialog({
 			title: `Selecione uma imagem para o ${canvas.title}`,
 			buttonLabel: 'Selecionar',
-			filters: [{ name: 'Imagens', extensions: IMAGE_EXTENSIONS }],
+			filters: [{ name: 'Imagens', extensions: SUPPORTED_IMAGE_TYPES.flatMap((imageType) => imageType.extensions) }],
 		})
 
 		if (info.canceled) {
@@ -51,7 +61,7 @@ const Toolbox = ({ visible, onClose, canvas1Ref, canvas2Ref, canvasResultRef }: 
 
 		if ((await fs.stat(filePath)).size > 262144000) {
 			message.warn(
-				'A imagem selecionada tem tamanho maior que 256mb e, por questões de performance, não será carregada.'
+				'A imagem selecionada tem tamanho maior que 256mb e, por questões de performance, não será carregada, por favor, escolha outra imagem.'
 			)
 			return
 		}
@@ -79,23 +89,18 @@ const Toolbox = ({ visible, onClose, canvas1Ref, canvas2Ref, canvasResultRef }: 
 
 	const download = async ({ current: canvas }: React.MutableRefObject<HTMLCanvasElement | null>) => {
 		if (!canvas) {
-			message.error(ERROR_MESSAGE.INTERNAL)
+			message.error(MESSAGES.ERROR.internal)
 			return
 		}
 
-		if (canvas.width < 1 && canvas.height < 1) {
-			message.info(`Não há imagem no ${canvas.title}.`)
+		if (!canvas.width && !canvas.height) {
+			message.info(MESSAGES.INFO.thereIsNothingOn(canvas.title))
 			return
 		}
 
 		const info = await remote.dialog.showSaveDialog({
-			title: `Escolha um local e um nome para salvar a imagem do ${canvas.title}`,
-			filters: [
-				{ name: 'Imagem PNG', extensions: ['png'] },
-				{ name: 'Imagem JPEG', extensions: ['jpg', 'jpeg'] },
-				{ name: 'Imagem BMP', extensions: ['bmp'] },
-				{ name: 'Imagem TIFF', extensions: ['tif', 'tiff'] },
-			],
+			title: `Escolha um local e um nome a imagem do ${canvas.title}`,
+			filters: SUPPORTED_IMAGE_TYPES,
 		})
 
 		if (info.canceled) {
@@ -105,14 +110,14 @@ const Toolbox = ({ visible, onClose, canvas1Ref, canvas2Ref, canvasResultRef }: 
 		const { filePath } = info
 
 		if (!filePath) {
-			message.warn('Por favor, informe um nome ao salvar a imagem.')
+			message.warn('Por favor, informe um nome para imagem.')
 			return
 		}
 
 		const choosenExtension = path.extname(filePath).replace('.', '')
 
 		if (!choosenExtension) {
-			message.warn('Por favor, informe um nome ao salvar a imagem.')
+			message.warn('Por favor, escolha uma extensão para a imagem.')
 			return
 		}
 
@@ -138,12 +143,12 @@ const Toolbox = ({ visible, onClose, canvas1Ref, canvas2Ref, canvasResultRef }: 
 	) => {
 		const { current: canvasResult } = canvasResultRef
 		if (!canvas || !canvasResult) {
-			message.error(ERROR_MESSAGE.INTERNAL)
+			message.error(MESSAGES.ERROR.internal)
 			return
 		}
 
-		if (canvas.width < 1 && canvas.height < 1) {
-			message.info(`Não há imagem no ${canvas.title}.`)
+		if (!canvas.width && !canvas.height) {
+			message.info(MESSAGES.INFO.thereIsNothingOn(canvas.title))
 			return
 		}
 
