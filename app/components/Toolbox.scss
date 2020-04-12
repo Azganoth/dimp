@@ -1,49 +1,5 @@
 .toolbox {
-	.basic-actions {
-		display: flex;
-		flex-direction: column;
-		justify-content: center;
-		align-items: center;
-
-		.basic-actions-row {
-			display: flex;
-			justify-content: space-between;
-			align-items: center;
-			width: 100%;
-		}
-
-		.basic-action {
-			margin: 0.25rem;
-			width: 100%;
-		}
-	}
-
-	.credits {
-		display: flex;
-		justify-content: space-between;
-		align-items: center;
-		padding: 1rem;
+	.basic-action {
 		width: 100%;
-
-		#author-info {
-			font-size: small;
-		}
-
-		#repo-link {
-			display: flex;
-			align-items: center;
-		}
-	}
-}
-
-.tool {
-	display: flex;
-	flex-direction: column;
-	justify-content: center;
-	align-items: center;
-	text-align: center;
-
-	.label {
-		font-size: 1.5rem;
 	}
 }

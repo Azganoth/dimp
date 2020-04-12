@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import { remote } from 'electron'
 import path from 'path'
 import fs from 'fs-extra'
-import { Button, Collapse, Divider, Drawer, Space, Typography, message } from 'antd'
+import { Button, Col, Collapse, Divider, Drawer, Row, Space, Tooltip, Typography, message } from 'antd'
 import { DownloadOutlined, ExperimentOutlined, GithubOutlined, UploadOutlined } from '@ant-design/icons'
 import './Toolbox.scss'
 
@@ -179,8 +179,8 @@ const Toolbox = ({ visible, onClose, canvas1Ref, canvas2Ref, canvasResultRef }: 
 			visible={visible}
 			onClose={onClose}
 		>
-			<div className="basic-actions">
-				<div className="basic-actions-row">
+			<Row gutter={[8, 8]}>
+				<Col span={12}>
 					<Button
 						className="basic-action"
 						type="dashed"
@@ -198,6 +198,8 @@ const Toolbox = ({ visible, onClose, canvas1Ref, canvas2Ref, canvasResultRef }: 
 					>
 						Carregar imagem 1!
 					</Button>
+				</Col>
+				<Col span={12}>
 					<Button
 						className="basic-action"
 						size="large"
@@ -214,9 +216,11 @@ const Toolbox = ({ visible, onClose, canvas1Ref, canvas2Ref, canvasResultRef }: 
 					>
 						Salvar imagem 1!
 					</Button>
-				</div>
+				</Col>
+			</Row>
 
-				<div className="basic-actions-row">
+			<Row gutter={[8, 8]}>
+				<Col span={12}>
 					<Button
 						className="basic-action"
 						type="dashed"
@@ -234,6 +238,8 @@ const Toolbox = ({ visible, onClose, canvas1Ref, canvas2Ref, canvasResultRef }: 
 					>
 						Carregar imagem 2!
 					</Button>
+				</Col>
+				<Col span={12}>
 					<Button
 						className="basic-action"
 						size="large"
@@ -250,62 +256,83 @@ const Toolbox = ({ visible, onClose, canvas1Ref, canvas2Ref, canvasResultRef }: 
 					>
 						Salvar imagem 2!
 					</Button>
-				</div>
+				</Col>
+			</Row>
 
-				<Button
-					className="basic-action"
-					type="primary"
-					size="large"
-					icon={<DownloadOutlined />}
-					loading={busy}
-					onClick={async () => {
-						setBusy(true)
-						try {
-							await download(canvasResultRef)
-						} finally {
-							setBusy(false)
-						}
-					}}
-				>
-					Salvar imagem resultado!
-				</Button>
-			</div>
+			<Row gutter={[8, 8]}>
+				<Col span={24}>
+					<Button
+						className="basic-action"
+						size="large"
+						icon={<DownloadOutlined />}
+						loading={busy}
+						onClick={async () => {
+							setBusy(true)
+							try {
+								await download(canvasResultRef)
+							} finally {
+								setBusy(false)
+							}
+						}}
+					>
+						Salvar imagem resultado!
+					</Button>
+				</Col>
+			</Row>
 
 			<Divider />
 
 			<Collapse accordion>
 				<Panel key="1" header="Tons de cinza">
-					<div className="tool">
-						<Button
-							type="primary"
-							icon={<ExperimentOutlined />}
-							loading={busy}
-							onClick={async () => {
-								setBusy(true)
-								try {
-									await greyscale(canvas1Ref)
-								} finally {
-									setBusy(false)
-								}
-							}}
-						>
-							Média aritmética
-						</Button>
-
-						<Divider />
-
-						<Space size="large" direction="vertical">
-							<Space size="large">
-								<Text className="label">R</Text>
-								<PercentInput size="large" value={greyscaleR} onChange={setGreyscaleR} />
-								<Text className="label">G</Text>
-								<PercentInput size="large" value={greyscaleG} onChange={setGreyscaleG} />
-								<Text className="label">B</Text>
-								<PercentInput size="large" value={greyscaleB} onChange={setGreyscaleB} />
-							</Space>
-
+					<Row justify="center">
+						<Col>
 							<Button
 								type="primary"
+								size="large"
+								icon={<ExperimentOutlined />}
+								loading={busy}
+								onClick={async () => {
+									setBusy(true)
+									try {
+										await greyscale(canvas1Ref)
+									} finally {
+										setBusy(false)
+									}
+								}}
+							>
+								Aplicar média aritmética
+							</Button>
+						</Col>
+					</Row>
+
+					<Divider />
+
+					<Row gutter={[32, 24]} justify="center">
+						<Col>
+							<Space>
+								<Text strong>R</Text>
+								<PercentInput size="large" value={greyscaleR} onChange={setGreyscaleR} />
+							</Space>
+						</Col>
+						<Col>
+							<Space>
+								<Text strong>G</Text>
+								<PercentInput size="large" value={greyscaleG} onChange={setGreyscaleG} />
+							</Space>
+						</Col>
+						<Col>
+							<Space>
+								<Text strong>B</Text>
+								<PercentInput size="large" value={greyscaleB} onChange={setGreyscaleB} />
+							</Space>
+						</Col>
+					</Row>
+
+					<Row justify="center">
+						<Col>
+							<Button
+								type="primary"
+								size="large"
 								icon={<ExperimentOutlined />}
 								loading={busy}
 								onClick={async () => {
@@ -317,10 +344,10 @@ const Toolbox = ({ visible, onClose, canvas1Ref, canvas2Ref, canvasResultRef }: 
 									}
 								}}
 							>
-								Média ponderada
+								Aplicar média ponderada
 							</Button>
-						</Space>
-					</div>
+						</Col>
+					</Row>
 				</Panel>
 				<Panel key="2" header="Limiarização">
 					<p>fjsdjh sfh sshdf hsdu hsi</p>
@@ -339,17 +366,16 @@ const Toolbox = ({ visible, onClose, canvas1Ref, canvas2Ref, canvasResultRef }: 
 				</Panel>
 			</Collapse>
 
-			<div className="credits">
-				<Text id="author-info">Ademir J. Ferreira Júnior &lt;ademirj.ferreirajunior@gmail.com&gt;</Text>
-				<Button
-					id="repo-link"
-					type="link"
-					shape="round"
-					size="large"
-					icon={<GithubOutlined />}
-					href="https://github.com/Azganoth/dimp"
-				/>
-			</div>
+			<Row gutter={[0, 16]} justify="space-between" align="middle">
+				<Col>
+					<Text>Ademir J. Ferreira Júnior &lt;ademirj.ferreirajunior@gmail.com&gt;</Text>
+				</Col>
+				<Col>
+					<Tooltip title="Abrir página do repositório github no navegador.">
+						<Button type="link" size="large" icon={<GithubOutlined />} href="https://github.com/Azganoth/dimp" />
+					</Tooltip>
+				</Col>
+			</Row>
 		</Drawer>
 	)
 }

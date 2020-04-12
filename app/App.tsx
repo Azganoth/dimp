@@ -1,13 +1,15 @@
 import React, { useRef, useState } from 'react'
-import { Button, Space, Tooltip, message } from 'antd'
+import { Button, Col, Layout, Row, Space, Tooltip, message } from 'antd'
 import { BarChartOutlined, ToolOutlined } from '@ant-design/icons'
 import './App.scss'
 
 import Toolbox from './components/Toolbox'
 
+const { Header, Content } = Layout
+
 message.config({
 	duration: 2,
-	top: 9,
+	top: 7,
 })
 
 const App = () => {
@@ -60,7 +62,7 @@ const App = () => {
 	const canvasMouseOut = () => setPixelShowcaseValue()
 
 	return (
-		<div id="root">
+		<Layout id="app-root">
 			<Toolbox
 				visible={toolboxVisible}
 				canvas1Ref={canvas1Ref}
@@ -69,31 +71,55 @@ const App = () => {
 				onClose={closeToolbox}
 			/>
 
-			<header className="header">
-				<Tooltip title="Abrir caixa de ferramentas." placement="right">
-					<Button className="header-action" shape="round" size="large" icon={<ToolOutlined />} onClick={openToolbox} />
-				</Tooltip>
-				<Space size="large">
-					<div id="r" className="pixel-value">
-						{pixelShowcaseValueR}
-					</div>
-					<div id="g" className="pixel-value">
-						{pixelShowcaseValueG}
-					</div>
-					<div id="b" className="pixel-value">
-						{pixelShowcaseValueB}
-					</div>
-					<div id="a" className="pixel-value">
-						{pixelShowcaseValueA}
-					</div>
-				</Space>
-				<Tooltip title="Abrir histograma. (WIP)" placement="left">
-					<Button className="header-action" shape="round" size="large" icon={<BarChartOutlined />} />
-				</Tooltip>
-			</header>
+			<Header id="app-header">
+				<Row justify="center" align="middle">
+					<Col>
+						<Tooltip title="Abrir caixa de ferramentas." placement="right">
+							<Button
+								className="header-action"
+								type="primary"
+								size="large"
+								icon={<ToolOutlined />}
+								onClick={openToolbox}
+							/>
+						</Tooltip>
+					</Col>
 
-			<main className="content">
-				<div className="canvas">
+					<Col flex="auto">
+						<Row justify="center">
+							<Space>
+								<div id="r" className="pixel-showcase-value">
+									{pixelShowcaseValueR}
+								</div>
+								<div id="g" className="pixel-showcase-value">
+									{pixelShowcaseValueG}
+								</div>
+								<div id="b" className="pixel-showcase-value">
+									{pixelShowcaseValueB}
+								</div>
+								<div id="a" className="pixel-showcase-value">
+									{pixelShowcaseValueA}
+								</div>
+							</Space>
+						</Row>
+					</Col>
+
+					<Col>
+						<Tooltip title="Abrir histograma. (WIP)" placement="left">
+							<Button className="header-action" type="primary" size="large" icon={<BarChartOutlined />} />
+						</Tooltip>
+					</Col>
+				</Row>
+			</Header>
+
+			<Content
+				id="app-content"
+				className={
+					// no need to show canvas-2 if it was a size of 0x0
+					canvas2Ref.current?.width && canvas2Ref.current?.height ? 'three-active-canvases' : 'two-active-canvases'
+				}
+			>
+				<div className="canvas-wrapper">
 					<canvas
 						ref={canvas1Ref}
 						id="canvas-1"
@@ -104,7 +130,7 @@ const App = () => {
 						onMouseOut={canvasMouseOut}
 					/>
 				</div>
-				<div className="canvas">
+				<div id="hidden-wrapper" className="canvas-wrapper">
 					<canvas
 						ref={canvas2Ref}
 						id="canvas-2"
@@ -115,7 +141,7 @@ const App = () => {
 						onMouseOut={canvasMouseOut}
 					/>
 				</div>
-				<div className="canvas">
+				<div className="canvas-wrapper">
 					<canvas
 						ref={canvasResultRef}
 						id="canvas-result"
@@ -126,8 +152,8 @@ const App = () => {
 						onMouseOut={canvasMouseOut}
 					/>
 				</div>
-			</main>
-		</div>
+			</Content>
+		</Layout>
 	)
 }
 

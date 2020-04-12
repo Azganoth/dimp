@@ -1,60 +1,69 @@
-$header-height: 4rem;
 $striped-background: repeating-linear-gradient(-45deg, #f9f9f9, #f9f9f9 3px, white 3px, white 6px);
 
-#root {
-	display: flex;
-	flex-direction: column;
-	height: 100vh;
+#app-root {
+	overflow: hidden;
 }
 
-.header {
-	display: flex;
-	justify-content: space-between;
-	align-items: center;
-	padding: 0.5rem;
-	height: $header-height;
+#app-header {
+	padding: 0 0.5rem;
+	background: white;
 
 	.header-action {
-		min-width: 5em;
+		width: 6rem;
 	}
 
-	.pixel-value {
+	.pixel-showcase-value {
 		border-radius: 1rem;
 		width: 4rem;
 		height: 2.5rem;
 		color: white;
 		font-size: 1.5rem;
 		font-weight: bold;
+		line-height: 2.4rem;
 		text-align: center;
-	}
 
-	#r {
-		background-color: #f5222d;
-	}
+		&#r {
+			background-color: #f5222d;
+		}
 
-	#g {
-		background-color: #52c41a;
-	}
+		&#g {
+			background-color: #52c41a;
+		}
 
-	#b {
-		background-color: #1890ff;
-	}
+		&#b {
+			background-color: #1890ff;
+		}
 
-	#a {
-		color: black;
-		background: $striped-background;
+		&#a {
+			color: black;
+			background: $striped-background;
+		}
 	}
 }
 
-.content {
+#app-content {
 	display: flex;
-	height: calc(100% - #{$header-height});
+	justify-content: space-between;
+	height: calc(100vh - 64px);
 
-	.canvas {
+	.canvas-wrapper {
 		overflow: auto;
 		position: relative;
-		width: 33.3%;
 		height: 100%;
 		background: $striped-background;
+	}
+
+	&.two-active-canvases {
+		.canvas-wrapper:not(#hidden-wrapper) {
+			width: 50%;
+		}
+
+		#hidden-wrapper {
+			width: 0;
+		}
+	}
+
+	&.three-active-canvases .canvas-wrapper {
+		width: 33.33%;
 	}
 }
