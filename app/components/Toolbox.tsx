@@ -220,6 +220,34 @@ const Toolbox = ({ visible, onClose, canvas1Ref, canvas2Ref, canvasResultRef }: 
 		canvasResult.getContext('2d')!.putImageData(imageData, 0, 0)
 	}
 
+	// negative
+
+	const negative = async ({ current: canvas }: React.MutableRefObject<HTMLCanvasElement | null>) => {
+		const { current: canvasResult } = canvasResultRef
+		if (!canvas || !canvasResult) {
+			message.error(MESSAGES.ERROR.internal)
+			return
+		}
+
+		if (!canvas.width && !canvas.height) {
+			message.info(MESSAGES.INFO.thereIsNothingOn(canvas.title))
+			return
+		}
+
+		const imageData = canvas.getContext('2d')!.getImageData(0, 0, canvas.width, canvas.height)
+
+		const { data } = imageData
+		for (let i = 0; i < data.length; i += 4) {
+			data[i] = 255 - data[i]
+			data[i + 1] = 255 - data[i + 1]
+			data[i + 2] = 255 - data[i + 2]
+		}
+
+		canvasResult.width = canvas.width
+		canvasResult.height = canvas.height
+		canvasResult.getContext('2d')!.putImageData(imageData, 0, 0)
+	}
+
 	return (
 		<Drawer
 			className="toolbox"
@@ -454,7 +482,26 @@ const Toolbox = ({ visible, onClose, canvas1Ref, canvas2Ref, canvasResultRef }: 
 					</Row>
 				</Panel>
 				<Panel key="3" header="Negativa">
-					<p>zoxco zjzoxjzo zox jz</p>
+					<Row justify="center">
+						<Col>
+							<Button
+								type="primary"
+								size="large"
+								icon={<ExperimentOutlined />}
+								loading={busy}
+								onClick={async () => {
+									setBusy(true)
+									try {
+										await negative(canvas1Ref)
+									} finally {
+										setBusy(false)
+									}
+								}}
+							>
+								Aplicar negativa
+							</Button>
+						</Col>
+					</Row>
 				</Panel>
 				<Panel key="4" header="Adição / Subtração">
 					<p>em, qwp mepqwm pqwm afg</p>
