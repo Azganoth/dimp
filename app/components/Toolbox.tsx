@@ -64,7 +64,12 @@ const Toolbox = ({ visible, onClose, canvas1Ref, canvas2Ref, canvasResultRef }: 
 		const info = await remote.dialog.showOpenDialog({
 			title: `Selecione uma imagem para o ${canvas.title}`,
 			buttonLabel: 'Selecionar',
-			filters: [{ name: 'Imagens', extensions: SUPPORTED_IMAGE_TYPES.flatMap((imageType) => imageType.extensions) }],
+			filters: [
+				{
+					name: 'Imagens',
+					extensions: SUPPORTED_IMAGE_TYPES.flatMap((imageType) => imageType.extensions),
+				},
+			],
 		})
 
 		if (info.canceled) {
@@ -400,7 +405,13 @@ const Toolbox = ({ visible, onClose, canvas1Ref, canvas2Ref, canvasResultRef }: 
 							<Slider
 								min={0}
 								max={255}
-								marks={{ 0: '0', 63: '63', 127: '127', 191: '191', 255: '255' }}
+								marks={{
+									0: '0',
+									63: '63',
+									127: '127',
+									191: '191',
+									255: '255',
+								}}
 								value={threshValue}
 								onChange={(value) => {
 									setThreshValue(typeof value === 'number' ? value : value[0])
