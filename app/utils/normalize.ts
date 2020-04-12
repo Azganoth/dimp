@@ -4,6 +4,6 @@ export const normalizeIntegerInput = (
 	max = Infinity,
 	radix = 10
 ) => {
-	const n = Number.parseInt(value, radix)
+	const n = Number.parseInt(String(value), radix)
 	return Number.isNaN(n) ? 0 : n < min ? min : n > max ? max : n
 }
