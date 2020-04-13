@@ -9,6 +9,7 @@ import {
 	Divider,
 	Drawer,
 	InputNumber,
+	Radio,
 	Row,
 	Slider,
 	Space,
@@ -245,6 +246,133 @@ const Toolbox = ({ visible, onClose, canvas1Ref, canvas2Ref, canvasResultRef }: 
 
 		canvasResult.width = canvas.width
 		canvasResult.height = canvas.height
+		canvasResult.getContext('2d')!.putImageData(imageData, 0, 0)
+	}
+
+	// noise
+
+	const [noiseType, setNoiseType] = useState(0) // 0 = Cross, 1 = X, 2 = 3x3
+
+	const removeNoise = async ({ current: canvas }: React.MutableRefObject<HTMLCanvasElement | null>) => {
+		const { current: canvasResult } = canvasResultRef
+		if (!canvas || !canvasResult) {
+			message.error(MESSAGES.ERROR.internal)
+			return
+		}
+
+		if (!canvas.width && !canvas.height) {
+			message.info(MESSAGES.INFO.thereIsNothingOn(canvas.title))
+			return
+		}
+
+		const { width, height } = canvas
+		const imageData = canvas.getContext('2d')!.getImageData(0, 0, width, height)
+
+		const median = (a: number[]) => a.sort((a, b) => a - b)[Math.floor(a.length / 2)]
+
+		const { data } = imageData
+		// ignore borders
+		for (let y = 1; y < height - 1; y++) {
+			for (let x = 1; x < width - 1; x++) {
+				// each pixel ([r,g,b,a]) starts at 'x * 4 + y * 4 * width'
+				const i = x * 4 + y * 4 * width
+
+				const top = i - 4 * width
+				const bottom = i + 4 * width
+
+				switch (noiseType) {
+					// cross
+					case 0: {
+						const left = i - 4
+						const right = i + 4
+
+						data[i] = median([data[i], data[top], data[bottom], data[left], data[right]])
+						data[i + 1] = median([data[i + 1], data[top + 1], data[bottom + 1], data[left + 1], data[right + 1]])
+						data[i + 2] = median([data[i + 2], data[top + 2], data[bottom + 2], data[left + 2], data[right + 2]])
+
+						break
+					}
+
+					// X
+					case 1: {
+						const topLeft = top - 4
+						const topRight = top + 4
+						const bottomLeft = bottom - 4
+						const bottomRight = bottom + 4
+
+						data[i] = median([data[i], data[topLeft], data[topRight], data[bottomLeft], data[bottomRight]])
+						data[i + 1] = median([
+							data[i + 1],
+							data[topLeft + 1],
+							data[topRight + 1],
+							data[bottomLeft + 1],
+							data[bottomRight + 1],
+						])
+						data[i + 2] = median([
+							data[i + 2],
+							data[topLeft + 2],
+							data[topRight + 2],
+							data[bottomLeft + 2],
+							data[bottomRight + 2],
+						])
+
+						break
+					}
+
+					// 3x3
+					case 2: {
+						const left = i - 4
+						const right = i + 4
+						const topLeft = top - 4
+						const topRight = top + 4
+						const bottomLeft = bottom - 4
+						const bottomRight = bottom + 4
+
+						data[i] = median([
+							data[i],
+							data[top],
+							data[bottom],
+							data[left],
+							data[right],
+							data[topLeft],
+							data[topRight],
+							data[bottomLeft],
+							data[bottomRight],
+						])
+						data[i + 1] = median([
+							data[i + 1],
+							data[top + 1],
+							data[bottom + 1],
+							data[left + 1],
+							data[right + 1],
+							data[topLeft + 1],
+							data[topRight + 1],
+							data[bottomLeft + 1],
+							data[bottomRight + 1],
+						])
+						data[i + 2] = median([
+							data[i + 2],
+							data[top + 2],
+							data[bottom + 2],
+							data[left + 2],
+							data[right + 2],
+							data[topLeft + 2],
+							data[topRight + 2],
+							data[bottomLeft + 2],
+							data[bottomRight + 2],
+						])
+
+						break
+					}
+
+					default:
+						break
+				}
+			}
+		}
+
+		canvasResult.width = width
+		canvasResult.height = height
 		canvasResult.getContext('2d')!.putImageData(imageData, 0, 0)
 	}
 
@@ -507,7 +635,40 @@ const Toolbox = ({ visible, onClose, canvas1Ref, canvas2Ref, canvasResultRef }: 
 					<p>em, qwp mepqwm pqwm afg</p>
 				</Panel>
 				<Panel key="5" header="Ruídos">
-					<p>ofdgo fdgodod f aa´k</p>
+					<Row gutter={[0, 12]} justify="center">
+						<Radio.Group size="large" value={noiseType} onChange={(e) => setNoiseType(e.target.value)}>
+							<Col>
+								<Radio value={0}>Método Cruz</Radio>
+							</Col>
+							<Col>
+								<Radio value={1}>Método X</Radio>
+							</Col>
+							<Col>
+								<Radio value={2}>Método 3x3</Radio>
+							</Col>
+						</Radio.Group>
+					</Row>
+
+					<Row justify="center">
+						<Col>
+							<Button
+								type="primary"
+								size="large"
+								icon={<ExperimentOutlined />}
+								loading={busy}
+								onClick={async () => {
+									setBusy(true)
+									try {
+										await removeNoise(canvas1Ref)
+									} finally {
+										setBusy(false)
+									}
+								}}
+							>
+								Eliminar ruidos
+							</Button>
+						</Col>
+					</Row>
 				</Panel>
 				<Panel key="6" header="Equalização de histograma">
 					<p>sdfkl smn sdoqwo xcfgjh</p>
