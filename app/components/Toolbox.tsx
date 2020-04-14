@@ -387,7 +387,7 @@ const Toolbox = ({ visible, onClose, canvas1Ref, canvas2Ref, canvasDumpRef, chal
 		const { data: canvas2Data } = canvas2.getContext('2d')!.getImageData(0, 0, width, height)
 
 		const { data } = imageData
-		// see this#removeNoise for more info of this loop
+		// see this#removeNoise for more info about this loop
 		for (let y = 0; y < height; y++) {
 			for (let x = 0; x < width; x++) {
 				const i = x * 4 + y * 4 * width
@@ -438,7 +438,7 @@ const Toolbox = ({ visible, onClose, canvas1Ref, canvas2Ref, canvasDumpRef, chal
 		const { data: canvas2Data } = canvas2.getContext('2d')!.getImageData(0, 0, width, height)
 
 		const { data } = imageData
-		// see this#removeNoise and this#sum for more info of this loop
+		// see this#removeNoise and this#sum for more info about this loop
 		for (let y = 0; y < height; y++) {
 			for (let x = 0; x < width; x++) {
 				const i = x * 4 + y * 4 * width

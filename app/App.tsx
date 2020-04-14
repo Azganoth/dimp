@@ -12,7 +12,7 @@ message.config({
 	top: 7,
 })
 
-// drawing border vars
+// drawing border challenge vars
 let drawingBorderCanvas: string | null = null // id of the canvas
 let drawingBorderCanvasBackup: ImageData | null = null // canvas image backup
 let drawingBorderStartCoords = { x: 0, y: 0 }
@@ -29,9 +29,11 @@ const App = () => {
 	}
 
 	// challenges
+
 	const [challenges, setChallenges] = useState(false)
 
 	// pixel showcase
+
 	const [pixelShowcaseValueR, setPixelShowcaseValueR] = useState<'R' | number>('R')
 	const [pixelShowcaseValueG, setPixelShowcaseValueG] = useState<'G' | number>('G')
 	const [pixelShowcaseValueB, setPixelShowcaseValueB] = useState<'B' | number>('B')
@@ -52,6 +54,7 @@ const App = () => {
 	}
 
 	// canvases
+
 	const canvas1Ref = useRef<HTMLCanvasElement | null>(null)
 	const canvas2Ref = useRef<HTMLCanvasElement | null>(null)
 	const canvasDumpRef = useRef<HTMLCanvasElement | null>(null)
