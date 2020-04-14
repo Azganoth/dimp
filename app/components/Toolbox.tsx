@@ -348,6 +348,112 @@ const Toolbox = ({ visible, onClose, canvas1Ref, canvas2Ref, canvasDumpRef }: To
 		canvasDump.getContext('2d')!.putImageData(imageData, 0, 0)
 	}
 
+	// sum / sub
+
+	const [canvas1SumSubP, setCanvas1SumSubP] = useState(50)
+	const [canvas2SumSubP, setCanvas2SumSubP] = useState(50)
+
+	const sum = () => {
+		const { current: canvas1 } = canvas1Ref
+		const { current: canvas2 } = canvas2Ref
+		const { current: canvasDump } = canvasDumpRef
+
+		if (!canvas1 || !canvas2 || !canvasDump) {
+			message.error(INTERNAL_ERROR_MESSAGE)
+			return
+		}
+
+		const { width: canvas1Width, height: canvas1Height } = canvas1
+		const { width: canvas2Width, height: canvas2Height } = canvas2
+
+		if (!canvas1Width && !canvas1Height) {
+			message.info(`O ${canvas1.title} está vazio.`)
+			return
+		}
+
+		if (!canvas2Width && !canvas2Height) {
+			message.info(`O ${canvas2.title} está vazio.`)
+			return
+		}
+
+		const width = Math.min(canvas1Width, canvas2Width)
+		const height = Math.min(canvas1Height, canvas2Height)
+
+		const imageData = new ImageData(width, height)
+		const { data: canvas1Data } = canvas1.getContext('2d')!.getImageData(0, 0, width, height)
+		const { data: canvas2Data } = canvas2.getContext('2d')!.getImageData(0, 0, width, height)
+
+		const { data } = imageData
+		// see this#removeNoise for more info of this loop
+		for (let y = 0; y < height; y++) {
+			for (let x = 0; x < width; x++) {
+				const i = x * 4 + y * 4 * width
+
+				for (let j = 0; j < 3; j++) {
+					const c = i + j // index of the pixel's channel
+					data[c] = (canvas1Data[c] * canvas1SumSubP + canvas2Data[c] * canvas2SumSubP) / 100
+				}
+
+				// set the opacity to 255, this is needed because the data was created by 'new ImageData'
+				data[i + 3] = 255
+			}
+		}
+
+		canvasDump.width = width
+		canvasDump.height = height
+		canvasDump.getContext('2d')!.putImageData(imageData, 0, 0)
+	}
+
+	const sub = () => {
+		const { current: canvas1 } = canvas1Ref
+		const { current: canvas2 } = canvas2Ref
+		const { current: canvasDump } = canvasDumpRef
+
+		if (!canvas1 || !canvas2 || !canvasDump) {
+			message.error(INTERNAL_ERROR_MESSAGE)
+			return
+		}
+
+		const { width: canvas1Width, height: canvas1Height } = canvas1
+		const { width: canvas2Width, height: canvas2Height } = canvas2
+
+		if (!canvas1Width && !canvas1Height) {
+			message.info(`O ${canvas1.title} está vazio.`)
+			return
+		}
+
+		if (!canvas2Width && !canvas2Height) {
+			message.info(`O ${canvas2.title} está vazio.`)
+			return
+		}
+
+		const width = Math.min(canvas1Width, canvas2Width)
+		const height = Math.min(canvas1Height, canvas2Height)
+
+		const imageData = new ImageData(width, height)
+		const { data: canvas1Data } = canvas1.getContext('2d')!.getImageData(0, 0, width, height)
+		const { data: canvas2Data } = canvas2.getContext('2d')!.getImageData(0, 0, width, height)
+
+		const { data } = imageData
+		// see this#removeNoise and this#sum for more info of this loop
+		for (let y = 0; y < height; y++) {
+			for (let x = 0; x < width; x++) {
+				const i = x * 4 + y * 4 * width
+
+				for (let j = 0; j < 3; j++) {
+					const c = i + j
+					data[c] = (canvas1Data[c] * canvas1SumSubP - canvas2Data[c] * canvas2SumSubP) / 100
+				}
+
+				data[i + 3] = 255
+			}
+		}
+
+		canvasDump.width = width
+		canvasDump.height = height
+		canvasDump.getContext('2d')!.putImageData(imageData, 0, 0)
+	}
+
 	return (
 		<Drawer
 			className="toolbox"
@@ -580,7 +686,87 @@ const Toolbox = ({ visible, onClose, canvas1Ref, canvas2Ref, canvasDumpRef }: To
 					</Row>
 				</Panel>
 				<Panel key="4" header="Adição / Subtração">
-					<p>em, qwp mepqwm pqwm afg</p>
+					<Row gutter={[0, 24]} justify="space-between">
+						<Col span={6}>
+							<Text strong>Imagem 1</Text>
+						</Col>
+						<Col span={10}>
+							<Slider
+								min={0}
+								max={100}
+								marks={{
+									0: '0',
+									25: '25',
+									50: '50',
+									75: '75',
+									100: '100',
+								}}
+								value={canvas1SumSubP}
+								onChange={(value) => {
+									setCanvas1SumSubP(typeof value === 'number' ? value : value[0])
+								}}
+							/>
+						</Col>
+						<Col span={6}>
+							<PercentInput size="large" value={canvas1SumSubP} onChange={setCanvas1SumSubP} />
+						</Col>
+					</Row>
+
+					<Row gutter={[0, 24]} justify="space-between">
+						<Col span={6}>
+							<Text strong>Imagem 2</Text>
+						</Col>
+						<Col span={10}>
+							<Slider
+								min={0}
+								max={100}
+								marks={{
+									0: '0',
+									25: '25',
+									50: '50',
+									75: '75',
+									100: '100',
+								}}
+								value={canvas2SumSubP}
+								onChange={(value) => {
+									setCanvas2SumSubP(typeof value === 'number' ? value : value[0])
+								}}
+							/>
+						</Col>
+						<Col span={6}>
+							<PercentInput size="large" value={canvas2SumSubP} onChange={setCanvas2SumSubP} />
+						</Col>
+					</Row>
+
+					<Row gutter={[0, 24]} justify="center">
+						<Col>
+							<Button
+								type="primary"
+								size="large"
+								icon={<ExperimentOutlined />}
+								onClick={() => {
+									sum()
+								}}
+							>
+								Aplicar adição
+							</Button>
+						</Col>
+					</Row>
+
+					<Row justify="center">
+						<Col>
+							<Button
+								type="primary"
+								size="large"
+								icon={<ExperimentOutlined />}
+								onClick={() => {
+									sub()
+								}}
+							>
+								Aplicar subtração
+							</Button>
+						</Col>
+					</Row>
 				</Panel>
 				<Panel key="5" header="Ruídos">
 					<Row gutter={[0, 12]} justify="center">
