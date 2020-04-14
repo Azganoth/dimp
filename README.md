@@ -45,6 +45,30 @@ App for Digital Image Processing algorithms testing. 🧪
 
 ![Negative](/screenshots/dimp-negative.png)
 
+### Sum 50-50
+
+![Sum 50-50](/screenshots/dimp-sum-50-50.png)
+
+### Sub 50-50
+
+![Sub 50-50](/screenshots/dimp-sub-50-50.png)
+
+### Thresh (Cross)
+
+![Thresh Cross](/screenshots/dimp-thresh-cross.png)
+
+### Thresh (X)
+
+![Thresh (X)](/screenshots/dimp-thresh-x.png)
+
+### Thresh (3x3)
+
+![Thresh (3x3)](/screenshots/dimp-thresh-3x3.png)
+
+### Challenge (Border Drawing)
+
+![Challenge (Border Drawing)](/screenshots/dimp-challenge-border-drawing.png)
+
 ## License
 
 This project is under a [MIT license](/LICENSE).
