@@ -46,7 +46,7 @@ const App = () => {
 	// canvases
 	const canvas1Ref = useRef<HTMLCanvasElement | null>(null)
 	const canvas2Ref = useRef<HTMLCanvasElement | null>(null)
-	const canvasResultRef = useRef<HTMLCanvasElement | null>(null)
+	const canvasDumpRef = useRef<HTMLCanvasElement | null>(null)
 
 	const canvasMouseMove = ({ nativeEvent: { offsetX, offsetY, target } }: React.MouseEvent<HTMLCanvasElement>) => {
 		const canvas = target as HTMLCanvasElement | null
@@ -67,7 +67,7 @@ const App = () => {
 				visible={toolboxVisible}
 				canvas1Ref={canvas1Ref}
 				canvas2Ref={canvas2Ref}
-				canvasResultRef={canvasResultRef}
+				canvasDumpRef={canvasDumpRef}
 				onClose={closeToolbox}
 			/>
 
@@ -143,8 +143,8 @@ const App = () => {
 				</div>
 				<div className="canvas-wrapper">
 					<canvas
-						ref={canvasResultRef}
-						id="canvas-result"
+						ref={canvasDumpRef}
+						id="canvas-dump"
 						title="canvas resultado"
 						width="0"
 						height="0"

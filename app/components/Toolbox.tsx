@@ -26,15 +26,8 @@ import PercentInput from './ui/PercentInput'
 const { Panel } = Collapse
 const { Text } = Typography
 
-const MESSAGES = {
-	ERROR: {
-		internal:
-			'Desculpe, ocorreu um erro interno, reinicie a aplicação e tente novamente. Caso o erro persista abra um issue.',
-	},
-	INFO: {
-		thereIsNothingOn: (subject: string) => `Não há nada no ${subject}.`,
-	},
-}
+const INTERNAL_ERROR_MESSAGE =
+	'Desculpe, ocorreu um erro interno, reinicie a aplicação e tente novamente. Caso o erro persista abra um issue na página do repositório.'
 
 const SUPPORTED_IMAGE_TYPES = [
 	{ name: 'Imagem PNG', extensions: ['png'] },
@@ -48,17 +41,17 @@ type ToolboxProps = {
 	onClose?: () => void
 	canvas1Ref: React.MutableRefObject<HTMLCanvasElement | null>
 	canvas2Ref: React.MutableRefObject<HTMLCanvasElement | null>
-	canvasResultRef: React.MutableRefObject<HTMLCanvasElement | null>
+	canvasDumpRef: React.MutableRefObject<HTMLCanvasElement | null>
 }
 
-const Toolbox = ({ visible, onClose, canvas1Ref, canvas2Ref, canvasResultRef }: ToolboxProps) => {
-	const [busy, setBusy] = useState(false)
+const Toolbox = ({ visible, onClose, canvas1Ref, canvas2Ref, canvasDumpRef }: ToolboxProps) => {
+	const [waiting, setWaiting] = useState(false)
 
 	// basic upload/download
 
 	const upload = async ({ current: canvas }: React.MutableRefObject<HTMLCanvasElement | null>) => {
 		if (!canvas) {
-			message.error(MESSAGES.ERROR.internal)
+			message.error(INTERNAL_ERROR_MESSAGE)
 			return
 		}
 
@@ -109,17 +102,17 @@ const Toolbox = ({ visible, onClose, canvas1Ref, canvas2Ref, canvasResultRef }: 
 
 	const download = async ({ current: canvas }: React.MutableRefObject<HTMLCanvasElement | null>) => {
 		if (!canvas) {
-			message.error(MESSAGES.ERROR.internal)
+			message.error(INTERNAL_ERROR_MESSAGE)
 			return
 		}
 
 		if (!canvas.width && !canvas.height) {
-			message.info(MESSAGES.INFO.thereIsNothingOn(canvas.title))
+			message.info(`O ${canvas.title} está vazio.`)
 			return
 		}
 
 		const info = await remote.dialog.showSaveDialog({
-			title: `Escolha um local e um nome a imagem do ${canvas.title}`,
+			title: `Escolha um local e um nome para a imagem do ${canvas.title}`,
 			filters: SUPPORTED_IMAGE_TYPES,
 		})
 
@@ -130,7 +123,7 @@ const Toolbox = ({ visible, onClose, canvas1Ref, canvas2Ref, canvasResultRef }: 
 		const { filePath } = info
 
 		if (!filePath) {
-			message.warn('Por favor, informe um nome para imagem.')
+			message.warn('Por favor, informe um nome para a imagem.')
 			return
 		}
 
@@ -153,89 +146,102 @@ const Toolbox = ({ visible, onClose, canvas1Ref, canvas2Ref, canvasResultRef }: 
 
 	// greyscale
 
-	const [greyscaleR, setGreyscaleR] = useState(0)
-	const [greyscaleG, setGreyscaleG] = useState(0)
-	const [greyscaleB, setGreyscaleB] = useState(0)
+	const [greyscaleRP, setGreyscaleRP] = useState(0)
+	const [greyscaleGP, setGreyscaleGP] = useState(0)
+	const [greyscaleBP, setGreyscaleBP] = useState(0)
 
-	const greyscale = async (
-		{ current: canvas }: React.MutableRefObject<HTMLCanvasElement | null>,
-		weighted?: boolean
-	) => {
-		const { current: canvasResult } = canvasResultRef
-		if (!canvas || !canvasResult) {
-			message.error(MESSAGES.ERROR.internal)
+	const greyscale = (weighted?: boolean) => {
+		const { current: canvas } = canvas1Ref
+		const { current: canvasDump } = canvasDumpRef
+
+		if (!canvas || !canvasDump) {
+			message.error(INTERNAL_ERROR_MESSAGE)
 			return
 		}
 
-		if (!canvas.width && !canvas.height) {
-			message.info(MESSAGES.INFO.thereIsNothingOn(canvas.title))
+		const { width, height } = canvas
+
+		if (!width && !height) {
+			message.info(`O ${canvas.title} está vazio.`)
 			return
 		}
 
-		const imageData = canvas.getContext('2d')!.getImageData(0, 0, canvas.width, canvas.height)
+		const imageData = canvas.getContext('2d')!.getImageData(0, 0, width, height)
+
+		const mean = (r: number, g: number, b: number) =>
+			weighted ? (r * greyscaleRP + g * greyscaleGP + b * greyscaleBP) / 300 : (r + g + b) / 3
 
 		const { data } = imageData
-		// transverse every pixel in the image ([r,g,b,a])
+		// go through each pixel ([r, g, b, a]) in the image
 		for (let i = 0; i < data.length; i += 4) {
-			const average = weighted
-				? (data[i] * greyscaleR + data[i + 1] * greyscaleG + data[i + 2] * greyscaleB) / 300
-				: (data[i] + data[i + 1] + data[i + 2]) / 3
+			const average = mean(data[i], data[i + 1], data[i + 2])
+
 			data[i] = average
 			data[i + 1] = average
 			data[i + 2] = average
 		}
 
-		canvasResult.width = canvas.width
-		canvasResult.height = canvas.height
-		canvasResult.getContext('2d')!.putImageData(imageData, 0, 0)
+		canvasDump.width = width
+		canvasDump.height = height
+		canvasDump.getContext('2d')!.putImageData(imageData, 0, 0)
 	}
 
 	// thresh
 
 	const [threshValue, setThreshValue] = useState(0)
 
-	const thresh = async ({ current: canvas }: React.MutableRefObject<HTMLCanvasElement | null>) => {
-		const { current: canvasResult } = canvasResultRef
-		if (!canvas || !canvasResult) {
-			message.error(MESSAGES.ERROR.internal)
+	const thresh = () => {
+		const { current: canvas } = canvas1Ref
+		const { current: canvasDump } = canvasDumpRef
+
+		if (!canvas || !canvasDump) {
+			message.error(INTERNAL_ERROR_MESSAGE)
 			return
 		}
 
-		if (!canvas.width && !canvas.height) {
-			message.info(MESSAGES.INFO.thereIsNothingOn(canvas.title))
+		const { width, height } = canvas
+
+		if (!width && !height) {
+			message.info(`O ${canvas.title} está vazio.`)
 			return
 		}
 
-		const imageData = canvas.getContext('2d')!.getImageData(0, 0, canvas.width, canvas.height)
+		const imageData = canvas.getContext('2d')!.getImageData(0, 0, width, height)
+
+		const mean = (r: number, g: number, b: number) => (r + g + b) / 3
 
 		const { data } = imageData
 		for (let i = 0; i < data.length; i += 4) {
-			const pxValue = (data[i] + data[i + 1] + data[i + 2]) / 3 > threshValue ? 255 : 0
-			data[i] = pxValue
-			data[i + 1] = pxValue
-			data[i + 2] = pxValue
+			const v = mean(data[i], data[i + 1], data[i + 2]) > threshValue ? 255 : 0
+			data[i] = v
+			data[i + 1] = v
+			data[i + 2] = v
 		}
 
-		canvasResult.width = canvas.width
-		canvasResult.height = canvas.height
-		canvasResult.getContext('2d')!.putImageData(imageData, 0, 0)
+		canvasDump.width = width
+		canvasDump.height = height
+		canvasDump.getContext('2d')!.putImageData(imageData, 0, 0)
 	}
 
 	// negative
 
-	const negative = async ({ current: canvas }: React.MutableRefObject<HTMLCanvasElement | null>) => {
-		const { current: canvasResult } = canvasResultRef
-		if (!canvas || !canvasResult) {
-			message.error(MESSAGES.ERROR.internal)
+	const negative = () => {
+		const { current: canvas } = canvas1Ref
+		const { current: canvasDump } = canvasDumpRef
+
+		if (!canvas || !canvasDump) {
+			message.error(INTERNAL_ERROR_MESSAGE)
 			return
 		}
 
-		if (!canvas.width && !canvas.height) {
-			message.info(MESSAGES.INFO.thereIsNothingOn(canvas.title))
+		const { width, height } = canvas
+
+		if (!width && !height) {
+			message.info(`O ${canvas.title} está vazio.`)
 			return
 		}
 
-		const imageData = canvas.getContext('2d')!.getImageData(0, 0, canvas.width, canvas.height)
+		const imageData = canvas.getContext('2d')!.getImageData(0, 0, width, height)
 
 		const { data } = imageData
 		for (let i = 0; i < data.length; i += 4) {
@@ -244,136 +250,102 @@ const Toolbox = ({ visible, onClose, canvas1Ref, canvas2Ref, canvasResultRef }: 
 			data[i + 2] = 255 - data[i + 2]
 		}
 
-		canvasResult.width = canvas.width
-		canvasResult.height = canvas.height
-		canvasResult.getContext('2d')!.putImageData(imageData, 0, 0)
+		canvasDump.width = width
+		canvasDump.height = height
+		canvasDump.getContext('2d')!.putImageData(imageData, 0, 0)
 	}
 
 	// noise
 
-	const [noiseType, setNoiseType] = useState(0) // 0 = Cross, 1 = X, 2 = 3x3
+	const [noiseRemovalType, setNoiseRemovalType] = useState(0) // 0 = Cross, 1 = X, 2 = 3x3
 
-	const removeNoise = async ({ current: canvas }: React.MutableRefObject<HTMLCanvasElement | null>) => {
-		const { current: canvasResult } = canvasResultRef
-		if (!canvas || !canvasResult) {
-			message.error(MESSAGES.ERROR.internal)
-			return
-		}
+	const removeNoise = () => {
+		const { current: canvas } = canvas1Ref
+		const { current: canvasDump } = canvasDumpRef
 
-		if (!canvas.width && !canvas.height) {
-			message.info(MESSAGES.INFO.thereIsNothingOn(canvas.title))
+		if (!canvas || !canvasDump) {
+			message.error(INTERNAL_ERROR_MESSAGE)
 			return
 		}
 
 		const { width, height } = canvas
+
+		if (!width && !height) {
+			message.info(`O ${canvas.title} está vazio.`)
+			return
+		}
+
 		const imageData = canvas.getContext('2d')!.getImageData(0, 0, width, height)
 
 		const median = (a: number[]) => a.sort((a, b) => a - b)[Math.floor(a.length / 2)]
 
 		const { data } = imageData
+
+		// get the pixel's neighbors channel
+		const getNeighborsChannel = (channel: number) => {
+			const top = channel - 4 * width
+			const bottom = channel + 4 * width
+
+			switch (noiseRemovalType) {
+				case 0: {
+					const left = channel - 4
+					const right = channel + 4
+
+					return [data[channel], data[top], data[bottom], data[left], data[right]]
+				}
+
+				case 1: {
+					const topLeft = top - 4
+					const topRight = top + 4
+					const bottomLeft = bottom - 4
+					const bottomRight = bottom + 4
+
+					return [data[channel], data[topLeft], data[topRight], data[bottomLeft], data[bottomRight]]
+				}
+
+				case 2: {
+					const left = channel - 4
+					const right = channel + 4
+					const topLeft = top - 4
+					const topRight = top + 4
+					const bottomLeft = bottom - 4
+					const bottomRight = bottom + 4
+
+					return [
+						data[channel],
+						data[top],
+						data[bottom],
+						data[left],
+						data[right],
+						data[topLeft],
+						data[topRight],
+						data[bottomLeft],
+						data[bottomRight],
+					]
+				}
+
+				default: {
+					return [255]
+				}
+			}
+		}
+
 		// ignore borders
 		for (let y = 1; y < height - 1; y++) {
 			for (let x = 1; x < width - 1; x++) {
 				// each pixel ([r,g,b,a]) starts at 'x * 4 + y * 4 * width'
 				const i = x * 4 + y * 4 * width
 
-				const top = i - 4 * width
-				const bottom = i + 4 * width
-
-				switch (noiseType) {
-					// cross
-					case 0: {
-						const left = i - 4
-						const right = i + 4
-
-						data[i] = median([data[i], data[top], data[bottom], data[left], data[right]])
-						data[i + 1] = median([data[i + 1], data[top + 1], data[bottom + 1], data[left + 1], data[right + 1]])
-						data[i + 2] = median([data[i + 2], data[top + 2], data[bottom + 2], data[left + 2], data[right + 2]])
-
-						break
-					}
-
-					// X
-					case 1: {
-						const topLeft = top - 4
-						const topRight = top + 4
-						const bottomLeft = bottom - 4
-						const bottomRight = bottom + 4
-
-						data[i] = median([data[i], data[topLeft], data[topRight], data[bottomLeft], data[bottomRight]])
-						data[i + 1] = median([
-							data[i + 1],
-							data[topLeft + 1],
-							data[topRight + 1],
-							data[bottomLeft + 1],
-							data[bottomRight + 1],
-						])
-						data[i + 2] = median([
-							data[i + 2],
-							data[topLeft + 2],
-							data[topRight + 2],
-							data[bottomLeft + 2],
-							data[bottomRight + 2],
-						])
-
-						break
-					}
-
-					// 3x3
-					case 2: {
-						const left = i - 4
-						const right = i + 4
-						const topLeft = top - 4
-						const topRight = top + 4
-						const bottomLeft = bottom - 4
-						const bottomRight = bottom + 4
-
-						data[i] = median([
-							data[i],
-							data[top],
-							data[bottom],
-							data[left],
-							data[right],
-							data[topLeft],
-							data[topRight],
-							data[bottomLeft],
-							data[bottomRight],
-						])
-						data[i + 1] = median([
-							data[i + 1],
-							data[top + 1],
-							data[bottom + 1],
-							data[left + 1],
-							data[right + 1],
-							data[topLeft + 1],
-							data[topRight + 1],
-							data[bottomLeft + 1],
-							data[bottomRight + 1],
-						])
-						data[i + 2] = median([
-							data[i + 2],
-							data[top + 2],
-							data[bottom + 2],
-							data[left + 2],
-							data[right + 2],
-							data[topLeft + 2],
-							data[topRight + 2],
-							data[bottomLeft + 2],
-							data[bottomRight + 2],
-						])
-
-						break
-					}
-
-					default:
-						break
+				// set the median (based on neighbors) of each channel ([r, g, b])
+				for (let j = 0; j < 3; j++) {
+					data[i + j] = median(getNeighborsChannel(i + j))
 				}
 			}
 		}
 
-		canvasResult.width = width
-		canvasResult.height = height
-		canvasResult.getContext('2d')!.putImageData(imageData, 0, 0)
+		canvasDump.width = width
+		canvasDump.height = height
+		canvasDump.getContext('2d')!.putImageData(imageData, 0, 0)
 	}
 
 	return (
@@ -392,13 +364,13 @@ const Toolbox = ({ visible, onClose, canvas1Ref, canvas2Ref, canvasResultRef }: 
 						type="dashed"
 						size="large"
 						icon={<UploadOutlined />}
-						loading={busy}
+						loading={waiting}
 						onClick={async () => {
-							setBusy(true)
+							setWaiting(true)
 							try {
 								await upload(canvas1Ref)
 							} finally {
-								setBusy(false)
+								setWaiting(false)
 							}
 						}}
 					>
@@ -410,13 +382,13 @@ const Toolbox = ({ visible, onClose, canvas1Ref, canvas2Ref, canvasResultRef }: 
 						className="basic-action"
 						size="large"
 						icon={<DownloadOutlined />}
-						loading={busy}
+						loading={waiting}
 						onClick={async () => {
-							setBusy(true)
+							setWaiting(true)
 							try {
 								await download(canvas1Ref)
 							} finally {
-								setBusy(false)
+								setWaiting(false)
 							}
 						}}
 					>
@@ -432,13 +404,13 @@ const Toolbox = ({ visible, onClose, canvas1Ref, canvas2Ref, canvasResultRef }: 
 						type="dashed"
 						size="large"
 						icon={<UploadOutlined />}
-						loading={busy}
+						loading={waiting}
 						onClick={async () => {
-							setBusy(true)
+							setWaiting(true)
 							try {
 								await upload(canvas2Ref)
 							} finally {
-								setBusy(false)
+								setWaiting(false)
 							}
 						}}
 					>
@@ -450,13 +422,13 @@ const Toolbox = ({ visible, onClose, canvas1Ref, canvas2Ref, canvasResultRef }: 
 						className="basic-action"
 						size="large"
 						icon={<DownloadOutlined />}
-						loading={busy}
+						loading={waiting}
 						onClick={async () => {
-							setBusy(true)
+							setWaiting(true)
 							try {
 								await download(canvas2Ref)
 							} finally {
-								setBusy(false)
+								setWaiting(false)
 							}
 						}}
 					>
@@ -471,13 +443,13 @@ const Toolbox = ({ visible, onClose, canvas1Ref, canvas2Ref, canvasResultRef }: 
 						className="basic-action"
 						size="large"
 						icon={<DownloadOutlined />}
-						loading={busy}
+						loading={waiting}
 						onClick={async () => {
-							setBusy(true)
+							setWaiting(true)
 							try {
-								await download(canvasResultRef)
+								await download(canvasDumpRef)
 							} finally {
-								setBusy(false)
+								setWaiting(false)
 							}
 						}}
 					>
@@ -496,14 +468,8 @@ const Toolbox = ({ visible, onClose, canvas1Ref, canvas2Ref, canvasResultRef }: 
 								type="primary"
 								size="large"
 								icon={<ExperimentOutlined />}
-								loading={busy}
-								onClick={async () => {
-									setBusy(true)
-									try {
-										await greyscale(canvas1Ref)
-									} finally {
-										setBusy(false)
-									}
+								onClick={() => {
+									greyscale()
 								}}
 							>
 								Aplicar média aritmética
@@ -517,19 +483,19 @@ const Toolbox = ({ visible, onClose, canvas1Ref, canvas2Ref, canvasResultRef }: 
 						<Col>
 							<Space>
 								<Text strong>R</Text>
-								<PercentInput size="large" value={greyscaleR} onChange={setGreyscaleR} />
+								<PercentInput size="large" value={greyscaleRP} onChange={setGreyscaleRP} />
 							</Space>
 						</Col>
 						<Col>
 							<Space>
 								<Text strong>G</Text>
-								<PercentInput size="large" value={greyscaleG} onChange={setGreyscaleG} />
+								<PercentInput size="large" value={greyscaleGP} onChange={setGreyscaleGP} />
 							</Space>
 						</Col>
 						<Col>
 							<Space>
 								<Text strong>B</Text>
-								<PercentInput size="large" value={greyscaleB} onChange={setGreyscaleB} />
+								<PercentInput size="large" value={greyscaleBP} onChange={setGreyscaleBP} />
 							</Space>
 						</Col>
 					</Row>
@@ -540,14 +506,8 @@ const Toolbox = ({ visible, onClose, canvas1Ref, canvas2Ref, canvasResultRef }: 
 								type="primary"
 								size="large"
 								icon={<ExperimentOutlined />}
-								loading={busy}
-								onClick={async () => {
-									setBusy(true)
-									try {
-										await greyscale(canvas1Ref, true)
-									} finally {
-										setBusy(false)
-									}
+								onClick={() => {
+									greyscale(true)
 								}}
 							>
 								Aplicar média ponderada
@@ -594,14 +554,8 @@ const Toolbox = ({ visible, onClose, canvas1Ref, canvas2Ref, canvasResultRef }: 
 								type="primary"
 								size="large"
 								icon={<ExperimentOutlined />}
-								loading={busy}
-								onClick={async () => {
-									setBusy(true)
-									try {
-										await thresh(canvas1Ref)
-									} finally {
-										setBusy(false)
-									}
+								onClick={() => {
+									thresh()
 								}}
 							>
 								Aplicar limiarização
@@ -616,14 +570,8 @@ const Toolbox = ({ visible, onClose, canvas1Ref, canvas2Ref, canvasResultRef }: 
 								type="primary"
 								size="large"
 								icon={<ExperimentOutlined />}
-								loading={busy}
-								onClick={async () => {
-									setBusy(true)
-									try {
-										await negative(canvas1Ref)
-									} finally {
-										setBusy(false)
-									}
+								onClick={() => {
+									negative()
 								}}
 							>
 								Aplicar negativa
@@ -636,7 +584,7 @@ const Toolbox = ({ visible, onClose, canvas1Ref, canvas2Ref, canvasResultRef }: 
 				</Panel>
 				<Panel key="5" header="Ruídos">
 					<Row gutter={[0, 12]} justify="center">
-						<Radio.Group size="large" value={noiseType} onChange={(e) => setNoiseType(e.target.value)}>
+						<Radio.Group size="large" value={noiseRemovalType} onChange={(e) => setNoiseRemovalType(e.target.value)}>
 							<Col>
 								<Radio value={0}>Método Cruz</Radio>
 							</Col>
@@ -651,22 +599,18 @@ const Toolbox = ({ visible, onClose, canvas1Ref, canvas2Ref, canvasResultRef }: 
 
 					<Row justify="center">
 						<Col>
-							<Button
-								type="primary"
-								size="large"
-								icon={<ExperimentOutlined />}
-								loading={busy}
-								onClick={async () => {
-									setBusy(true)
-									try {
-										await removeNoise(canvas1Ref)
-									} finally {
-										setBusy(false)
-									}
-								}}
-							>
-								Eliminar ruidos
-							</Button>
+							<Tooltip title="O applicativo poderá congelar até o término desta rotina.">
+								<Button
+									type="primary"
+									size="large"
+									icon={<ExperimentOutlined />}
+									onClick={() => {
+										removeNoise()
+									}}
+								>
+									Eliminar ruidos
+								</Button>
+							</Tooltip>
 						</Col>
 					</Row>
 				</Panel>
