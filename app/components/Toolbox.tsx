@@ -9,10 +9,12 @@ import {
 	Divider,
 	Drawer,
 	InputNumber,
+	List,
 	Radio,
 	Row,
 	Slider,
 	Space,
+	Switch,
 	Tooltip,
 	Typography,
 	message,
@@ -42,9 +44,10 @@ type ToolboxProps = {
 	canvas1Ref: React.MutableRefObject<HTMLCanvasElement | null>
 	canvas2Ref: React.MutableRefObject<HTMLCanvasElement | null>
 	canvasDumpRef: React.MutableRefObject<HTMLCanvasElement | null>
+	challenges: [boolean, (value: boolean) => void]
 }
 
-const Toolbox = ({ visible, onClose, canvas1Ref, canvas2Ref, canvasDumpRef }: ToolboxProps) => {
+const Toolbox = ({ visible, onClose, canvas1Ref, canvas2Ref, canvasDumpRef, challenges }: ToolboxProps) => {
 	const [waiting, setWaiting] = useState(false)
 
 	// basic upload/download
@@ -802,6 +805,31 @@ const Toolbox = ({ visible, onClose, canvas1Ref, canvas2Ref, canvasDumpRef }: To
 				</Panel>
 				<Panel key="6" header="Equalização de histograma">
 					<p>sdfkl smn sdoqwo xcfgjh</p>
+				</Panel>
+				<Panel key="7" header="Desafios">
+					<Row gutter={[0, 24]} justify="center">
+						<List
+							header={<Text>Implementados:</Text>}
+							dataSource={['Marcação']}
+							renderItem={(item) => (
+								<List.Item>
+									<Text>{item}</Text>
+								</List.Item>
+							)}
+						/>
+					</Row>
+
+					<Row justify="center">
+						<Col>
+							<Text strong>Ativar/Desativar</Text>
+						</Col>
+					</Row>
+
+					<Row justify="center">
+						<Col>
+							<Switch checked={challenges[0]} onChange={challenges[1]} />
+						</Col>
+					</Row>
 				</Panel>
 			</Collapse>
 
