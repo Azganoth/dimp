@@ -1,0 +1,104 @@
+root: true
+
+plugins:
+  - prettier
+
+extends:
+  - airbnb
+  - airbnb/hooks
+  - plugin:import/electron
+  - plugin:promise/recommended
+  - plugin:unicorn/recommended
+  - prettier
+  - prettier/react
+
+env:
+  node: true
+
+parserOptions:
+  ecmaVersion: 2020
+  ecmaFeatures:
+    jsx: true
+
+settings:
+  import/resolver:
+    node:
+      moduleDirectory: [node_modules, app]
+    typescript:
+      alwaysTryTypes: true
+    webpack:
+      config: 'webpack.config.js'
+
+rules:
+  # Disabled because sometimes the same function will need to return different values or nothing at all...
+  consistent-return: 0
+
+  no-param-reassign: [error, { props: false }]
+
+  no-unused-vars: warn
+
+  import/extensions: [error, ignorePackages, { js: never, ts: never, jsx: never, tsx: never }]
+
+  # Disabled because the production dependencies will be bundled
+  import/no-extraneous-dependencies: off
+
+  promise/avoid-new: error
+
+  # Disabled because it's unstable
+  unicorn/consistent-function-scoping: off
+
+  unicorn/filename-case: [error, { cases: { camelCase: true, pascalCase: true } }]
+
+  # Disabled because it's too annoying
+  unicorn/prevent-abbreviations: off
+
+  react/jsx-filename-extension: [error, extensions: [.jsx, .tsx]]
+
+  prettier/prettier: warn
+
+overrides:
+  - files: scripts/**/*
+    extends:
+      - plugin:node/recommended
+    rules:
+      # Disabled because they're frequently used in script code
+      no-console: 0
+
+      # Redundant with import/no-extraneous-dependencies
+      node/no-extraneous-import: off
+      node/no-extraneous-require: off
+
+      # Redundant with import/no-unresolved
+      node/no-missing-import: off
+      node/no-missing-require: off
+
+      # Disabled because they're too annoying
+      node/no-unpublished-import: off
+      node/no-unpublished-require: off
+
+      # Disabled as the rule doesn't exclude scripts executed with `node` but not referenced in 'bin'
+      node/shebang: off
+
+  - files: app/**/*
+    extends:
+      - plugin:import/typescript
+      - plugin:@typescript-eslint/eslint-recommended
+      - plugin:@typescript-eslint/recommended
+      - prettier/@typescript-eslint
+    env:
+      browser: true
+    parser: '@typescript-eslint/parser'
+    parserOptions:
+      project: 'app/tsconfig.json'
+    rules:
+      # Disabled because writing void everywhere hurts readability
+      '@typescript-eslint/explicit-function-return-type': off
+
+      # Disabled because it'll be frequently used by canvas#getContext('2d') calls
+      '@typescript-eslint/no-non-null-assertion': off
+
+      # Disabled because it's buggy (https://github.com/yannickcr/eslint-plugin-react/issues/1835)
+      react/jsx-one-expression-per-line: off
+
+      # Disabled because there are a lot of props to be passed on some components
+      react/jsx-props-no-spreading: off

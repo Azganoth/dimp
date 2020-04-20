@@ -1,0 +1,7 @@
+# Yarn
+.yarn
+yarn.lock
+
+# Project output
+dist
+public

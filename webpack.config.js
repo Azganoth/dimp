@@ -102,6 +102,23 @@ module.exports = (webpackEnv) => {
 		module: {
 			rules: [
 				{
+					enforce: 'pre',
+					test: /\.tsx?$/,
+					loader: require.resolve('eslint-loader'),
+					options: {
+						emitWarning: isDevEnv,
+					},
+					exclude: /node_modules/,
+				},
+				{
+					test: /\.tsx?$/,
+					loader: require.resolve('ts-loader'),
+					options: {
+						transpileOnly: true,
+					},
+					exclude: /node_modules/,
+				},
+				{
 					oneOf: [
 						{
 							test: /\.css$/,
@@ -140,14 +157,6 @@ module.exports = (webpackEnv) => {
 							exclude: [/\.[jt]sx?$/, /\.html$/, /\.json$/],
 						},
 					],
-				},
-				{
-					test: /\.tsx?$/,
-					loader: require.resolve('ts-loader'),
-					options: {
-						transpileOnly: true,
-					},
-					exclude: /node_modules/,
 				},
 			],
 		},
