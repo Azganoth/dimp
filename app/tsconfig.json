@@ -1,12 +1,21 @@
 {
-	"extends": "../tsconfig",
+	"extends": "../jsconfig",
 	"compilerOptions": {
 		"module": "ESNext",
 		"lib": ["ES2020", "DOM", "DOM.Iterable"],
+		"jsx": "react",
+		"sourceMap": true,
+		"outDir": "../public",
+		"moduleResolution": "Node",
 		"baseUrl": "../",
 		"paths": {
 			"app": ["app"]
-		}
+		},
+		"isolatedModules": true,
+		"esModuleInterop": true,
+		"experimentalDecorators": true,
+		"emitDecoratorMetadata": true,
+		"skipLibCheck": true
 	},
 	"exclude": []
 }
