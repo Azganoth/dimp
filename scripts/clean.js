@@ -1,32 +1,17 @@
-const assert = require('assert')
-const fs = require('fs-extra')
+const path = require('path');
+const { promises: fs } = require('fs');
 
-const { guard, execute } = require('./utils/exe')
+// throw unhandled rejections
+process.on('unhandledRejection', (error) => {
+	throw error;
+});
 
-guard()
+const OUTPUT_FOLDERS = ['public', 'dist'];
 
-/**
- * Deletes a directory.
- *
- * @param {string} path - The directory path.
- * @returns {Promise<string>} The operation result.
- */
-const deldir = async (dirPath) => {
-	assert.ok(dirPath, 'missing `path`')
-	assert.strictEqual(typeof dirPath, 'string', '`path` should be a string')
-
-	const exists = await fs.pathExists(dirPath)
-
-	await fs.remove(dirPath)
-
-	return exists
-		? `'${dirPath}' directory was deleted`
-		: `'${dirPath}' directory wasn't deleted cuz the path don't exist`
-}
-
-const clean = async () => {
-	console.log(await deldir('public'))
-	console.log(await deldir('dist'))
-}
-
-execute(clean)
+(async () => {
+	await Promise.all(
+		OUTPUT_FOLDERS.map(async (dirName) => {
+			await fs.rmdir(path.resolve(__dirname, '..', dirName), { recursive: true });
+		})
+	);
+})();

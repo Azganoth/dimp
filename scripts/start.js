@@ -1,84 +1,91 @@
-const electron = require('electron')
-const webpack = require('webpack')
-const chalk = require('chalk')
-const path = require('path')
-const fs = require('fs-extra')
-const { spawn } = require('child_process')
+const { spawn } = require('child_process');
+const electron = require('electron');
+const webpack = require('webpack');
+const { bold, green, magenta, red, yellow } = require('chalk');
+const path = require('path');
+const { promises: fs } = require('fs');
 
-const { guard, execute } = require('./utils/exe')
-const config = require('../webpack.config')
+// throw unhandled rejections
+process.on('unhandledRejection', (error) => {
+	throw error;
+});
 
-guard()
+process.env.NODE_ENV = 'development';
 
-process.env.NODE_ENV = 'development'
+const webpackConfig = require('../webpack.config');
 
-const rootDir = fs.realpathSync(process.cwd())
+(async () => {
+	await fs.rmdir(path.resolve(__dirname, '..', 'public'), { recursive: true });
 
-const start = async () => {
-	const publicDir = path.join(rootDir, 'public')
-	await fs.emptyDir(publicDir)
+	console.info(magenta('Starting development watcher...'));
 
-	console.log(chalk`Starting {magenta development} 'server', {cyan watching for changes}...`)
+	const config = webpackConfig(process.env.NODE_ENV);
 
-	const compiler = webpack(config(process.env.NODE_ENV))
-	await new Promise((resolve, reject) => {
-		let app
-		let lastHash
-		compiler.watch({}, (error, stats) => {
-			if (error) {
-				console.log(chalk`\n{red.bold The compiler encountered an error.}`)
-				return reject(error)
-			}
+	try {
+		// Disabled because the watcher needs to be kept alive using a new promise
+		// eslint-disable-next-line promise/avoid-new
+		await new Promise((resolve, reject) => {
+			let app;
+			let lastHash;
 
-			const info = stats.toJson({
-				all: false,
-				hash: true,
-				errors: true,
-				warnings: true,
-				builtAt: true,
-				timings: true,
-			})
+			const watcher = webpack(config).watch({}, (error, stats) => {
+				if (error) {
+					reject(error);
+				}
 
-			// ignore build if no changes are made
-			if (lastHash === info.hash) {
-				return
-			}
+				const { hash, builtAt, time } = stats.toJson({
+					all: false,
+					hash: true,
+					builtAt: true,
+					timings: true,
+				});
 
-			const builtAt = new Date(info.builtAt).toLocaleTimeString()
+				// ignore build if no changes are made
+				if (lastHash === hash) {
+					return;
+				}
 
-			if (stats.hasErrors()) {
-				console.log(chalk`\n{red.bold Build failed to compile at ${builtAt}.}`)
-				console.log(`\n${info.errors.join('\n\n')}`)
-				return
-			}
+				const localizedBuiltAt = new Date(builtAt).toLocaleTimeString();
 
-			if (stats.hasWarnings()) {
-				console.log(chalk`\n{yellow.bold Build compiled with warnings in {white ${info.time}ms} at ${builtAt}.}`)
-				console.log(`\n${info.warnings.join('\n\n')}`)
-			} else {
-				console.log(chalk`\n{green.bold Build successfully compiled in {white ${info.time}ms} at ${builtAt}.}`)
-			}
+				if (stats.hasErrors()) {
+					console.error(stats.toString({ all: false, errors: true }));
+					console.info(red('\nBuild failed to compile.'));
+					return;
+				}
 
-			lastHash = info.hash
+				if (stats.hasWarnings()) {
+					console.warn(stats.toString({ all: false, warnings: true }));
+					console.info(yellow(`\nBuild compiled with warnings in ${bold(time)}ms at ${localizedBuiltAt}.`));
+				} else {
+					console.info(green(`\nBuild successfully compiled in ${bold(time)}ms at ${localizedBuiltAt}.`));
+				}
 
-			if (app) {
-				console.log('Reloading electron app to apply changes...')
+				lastHash = hash;
 
-				app.send('reload')
-			} else {
-				console.log('Initiating electron app...')
+				if (app) {
+					app.send('reload');
+				} else {
+					app = spawn(electron, ['--require', path.resolve(__dirname, 'utils/electronHook.js'), '.'], {
+						cwd: process.cwd(),
+						stdio: ['inherit', 'inherit', 'inherit', 'ipc'],
+					});
 
-				app = spawn(electron, ['--require', path.resolve(__dirname, 'utils/hook.js'), '.'], {
-					cwd: process.cwd(),
-					stdio: ['inherit', 'inherit', 'inherit', 'ipc'],
-				})
+					app.once('close', () => {
+						app = null;
+					});
+				}
+			});
 
-				app.once('close', (code) => {
-					process.exit(code)
-				})
-			}
-		})
-	})
-}
-
-execute(start)
+			// close watcher and resolve on terminate signals
+			['SIGINT', 'SIGTERM'].forEach((sig) => {
+				process.on(sig, () => {
+					watcher.close();
+					resolve();
+				});
+			});
+		});
+	} catch (error) {
+		console.info('\nThe compiler encountered an error.\n');
+		throw error;
+	}
+})();

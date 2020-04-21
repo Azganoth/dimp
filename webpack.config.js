@@ -1,28 +1,28 @@
-const webpack = require('webpack')
-const path = require('path')
+const { ContextReplacementPlugin } = require('webpack');
+const path = require('path');
 
-const ForkTsCheckerPlugin = require('fork-ts-checker-webpack-plugin')
-const CopyPlugin = require('copy-webpack-plugin')
-const HtmlPlugin = require('html-webpack-plugin')
-const MiniCssExtractPlugin = require('mini-css-extract-plugin')
-const TerserPlugin = require('terser-webpack-plugin')
-const OptimizeCssAssetsPlugin = require('optimize-css-assets-webpack-plugin')
+const ForkTsCheckerPlugin = require('fork-ts-checker-webpack-plugin');
+const CopyPlugin = require('copy-webpack-plugin');
+const HtmlPlugin = require('html-webpack-plugin');
+const MiniCssExtractPlugin = require('mini-css-extract-plugin');
+const TerserPlugin = require('terser-webpack-plugin');
+const OptimizeCssAssetsPlugin = require('optimize-css-assets-webpack-plugin');
 
 module.exports = (webpackEnv) => {
-	const isDevEnv = webpackEnv === 'development'
-	const isProdEnv = webpackEnv === 'production'
+	const isDevelopmentEnv = webpackEnv === 'development';
+	const isProductionEnv = webpackEnv === 'production';
 
 	const getBasicCssLoaders = (cssOptions) =>
 		[
-			isDevEnv && require.resolve('style-loader'),
-			isProdEnv && { loader: MiniCssExtractPlugin.loader },
-			{ loader: require.resolve('css-loader'), options: { sourceMap: isProdEnv, ...cssOptions } },
-		].filter(Boolean)
+			isDevelopmentEnv && require.resolve('style-loader'),
+			isProductionEnv && { loader: MiniCssExtractPlugin.loader },
+			{ loader: require.resolve('css-loader'), options: { sourceMap: isProductionEnv, ...cssOptions } },
+		].filter(Boolean);
 
 	return {
-		mode: isProdEnv ? 'production' : 'development',
+		mode: isProductionEnv ? 'production' : 'development',
 
-		devtool: isProdEnv ? 'source-map' : 'inline-source-map',
+		devtool: isProductionEnv ? 'source-map' : 'inline-source-map',
 
 		target: 'electron-renderer',
 
@@ -37,7 +37,7 @@ module.exports = (webpackEnv) => {
 		},
 
 		optimization: {
-			minimize: isProdEnv,
+			minimize: isProductionEnv,
 			minimizer: [
 				new TerserPlugin({
 					terserOptions: {
@@ -77,9 +77,9 @@ module.exports = (webpackEnv) => {
 		},
 
 		plugins: [
-			new webpack.ContextReplacementPlugin(/moment[/\\]locale$/, /en|pt-br/),
+			new ContextReplacementPlugin(/moment[/\\]locale$/, /en|pt-br/),
 			new ForkTsCheckerPlugin({
-				async: isDevEnv,
+				async: isDevelopmentEnv,
 				silent: true,
 			}),
 			new CopyPlugin([
@@ -92,7 +92,7 @@ module.exports = (webpackEnv) => {
 				inject: true,
 				template: 'index.html',
 			}),
-			isProdEnv &&
+			isProductionEnv &&
 				new MiniCssExtractPlugin({
 					filename: 'css/[name].css',
 					chunkFilename: 'css/[name].chunk.css',
@@ -106,7 +106,7 @@ module.exports = (webpackEnv) => {
 					test: /\.tsx?$/,
 					loader: require.resolve('eslint-loader'),
 					options: {
-						emitWarning: isDevEnv,
+						emitWarning: isDevelopmentEnv,
 					},
 					exclude: /node_modules/,
 				},
@@ -131,7 +131,7 @@ module.exports = (webpackEnv) => {
 								{
 									loader: require.resolve('sass-loader'),
 									options: {
-										sourceMap: isProdEnv,
+										sourceMap: isProductionEnv,
 									},
 								},
 							],
@@ -143,7 +143,7 @@ module.exports = (webpackEnv) => {
 								{
 									loader: require.resolve('less-loader'),
 									options: {
-										sourceMap: isProdEnv,
+										sourceMap: isProductionEnv,
 										javascriptEnabled: true,
 									},
 								},
@@ -167,5 +167,5 @@ module.exports = (webpackEnv) => {
 				app: path.resolve(__dirname, 'app'),
 			},
 		},
-	}
-}
+	};
+};

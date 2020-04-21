@@ -1,61 +1,56 @@
-const builder = require('electron-builder')
-const webpack = require('webpack')
-const chalk = require('chalk')
-const path = require('path')
-const fs = require('fs-extra')
+const { build } = require('electron-builder');
+const webpack = require('webpack');
+const { bold, cyan, green, red, yellow } = require('chalk');
+const path = require('path');
+const { promisify } = require('util');
+const { promises: fs } = require('fs');
 
-const { guard, execute } = require('./utils/exe')
-const webpackConfig = require('../webpack.config')
+// throw unhandled rejections
+process.on('unhandledRejection', (error) => {
+	throw error;
+});
 
-guard()
+process.env.NODE_ENV = 'production';
 
-process.env.NODE_ENV = 'production'
+const webpackConfig = require('../webpack.config');
 
-const rootDir = fs.realpathSync(process.cwd())
+(async () => {
+	await fs.rmdir(path.resolve(__dirname, '..', 'public'), { recursive: true });
+	await fs.rmdir(path.resolve(__dirname, '..', 'dist'), { recursive: true });
 
-const dist = async () => {
-	const publicDir = path.join(rootDir, 'public')
-	const distDir = path.join(rootDir, 'dist')
-	await fs.emptyDir(publicDir)
-	await fs.emptyDir(distDir)
+	console.info(yellow('Creating a production build...'));
 
-	console.log(chalk`Creating a {yellow production} build...`)
+	const config = webpackConfig(process.env.NODE_ENV);
 
-	const compiler = webpack(webpackConfig(process.env.NODE_ENV))
-	await new Promise((resolve, reject) => {
-		compiler.run((error, stats) => {
-			if (error) {
-				console.log(chalk`\n{red.bold The compiler encountered an error.}`)
-				return reject(error)
-			}
+	try {
+		const stats = await promisify(webpack)(config);
 
-			const info = stats.toJson({
-				all: false,
-				errors: true,
-				warnings: true,
-				timings: true,
-			})
+		const { time } = stats.toJson({
+			all: false,
+			timings: true,
+		});
 
-			if (stats.hasErrors()) {
-				console.log(chalk`\n{red.bold Build failed to compile.}`)
-				return reject(new Error(info.errors.join('\n\n')))
-			}
+		if (stats.hasErrors()) {
+			console.error(stats.toString({ all: false, errors: true }));
+			console.info(red('\nBuild failed to compile.'));
+		} else if (stats.hasWarnings()) {
+			console.warn(stats.toString({ all: false, warnings: true }));
+			console.info(
+				yellow(`\nBuild compiled with warnings in ${bold(time)}ms. Resolve them to build distribution packages.`)
+			);
+		} else {
+			console.info(green(`\nBuild successfully compiled in ${bold(time)}ms.`));
 
-			if (stats.hasWarnings()) {
-				console.log(info.warnings.join('\n\n'))
-				console.log(chalk`\n{yellow.bold Build compiled with warnings in {white ${info.time}ms}.}`)
-			} else {
-				console.log(chalk`\n{green.bold Build successfully compiled in {white ${info.time}ms}.}`)
-			}
+			console.info('\nBuilding distribution packages...');
 
-			return resolve()
-		})
-	})
-
-	console.log(chalk`\nBuilding {green distribution} packages...`)
-
-	const packagesBuilt = await builder.build(/* config is at package.json under 'build' */)
-	console.log(`Packages built: ${packagesBuilt.map((f) => chalk.cyan(path.relative(distDir, f))).join(', ')}.`)
-}
-
-execute(dist)
+			console.info(
+				`\nBuilt packages: ${(await build(/* see 'build' at the package.json for build configuration */))
+					.map((p) => cyan(path.basename(p)))
+					.join(', ')}.`
+			);
+		}
+	} catch (error) {
+		console.info('\nThe compiler encountered an error.\n');
+		throw error;
+	}
+})();
