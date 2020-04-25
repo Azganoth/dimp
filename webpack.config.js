@@ -132,7 +132,9 @@ module.exports = (webpackEnv) => {
 									loader: require.resolve('less-loader'),
 									options: {
 										sourceMap: isProductionEnv,
-										javascriptEnabled: true,
+										lessOptions: {
+											javascriptEnabled: true,
+										},
 									},
 								},
 							],
