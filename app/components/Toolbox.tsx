@@ -1,65 +1,45 @@
-import React, { useState } from 'react'
-import { remote } from 'electron'
-import path from 'path'
-import fs from 'fs-extra'
-import {
-	Button,
-	Col,
-	Collapse,
-	Divider,
-	Drawer,
-	InputNumber,
-	List,
-	Radio,
-	Row,
-	Slider,
-	Space,
-	Switch,
-	Tooltip,
-	Typography,
-	message,
-} from 'antd'
-import { DownloadOutlined, ExperimentOutlined, GithubOutlined, UploadOutlined } from '@ant-design/icons'
-import './Toolbox.scss'
+import React, { useState } from 'react';
+import { Button, Col, Divider, Drawer, Radio, Row, Switch, Tabs, Tooltip, Typography, notification } from 'antd';
+import { CloseOutlined, DownloadOutlined, ExperimentOutlined, GithubOutlined, UploadOutlined } from '@ant-design/icons';
+import { remote } from 'electron';
+import path from 'path';
+import { promises as fs } from 'fs';
 
-import { normalizeIntegerInput } from 'app/utils/normalize'
-import PercentInput from './ui/PercentInput'
+import SliderInput from 'app/components/ui/SliderInput';
+import { MESSAGES, getCanvasImage, setCanvasImage } from 'app/logic/helpers';
+import * as algorithms from 'app/logic/algorithms';
 
-const { Panel } = Collapse
-const { Text } = Typography
-
-const INTERNAL_ERROR_MESSAGE =
-	'Desculpe, ocorreu um erro interno, reinicie a aplicação e tente novamente. Caso o erro persista abra um issue na página do repositório.'
+const { Text } = Typography;
+const { TabPane } = Tabs;
 
 const SUPPORTED_IMAGE_TYPES = [
 	{ name: 'Imagem PNG', extensions: ['png'] },
 	{ name: 'Imagem JPEG', extensions: ['jpg', 'jpeg'] },
 	{ name: 'Imagem BMP', extensions: ['bmp'] },
 	{ name: 'Imagem TIFF', extensions: ['tif', 'tiff'] },
-]
+];
 
-type ToolboxProps = {
-	visible: boolean
-	onClose?: () => void
-	canvas1Ref: React.MutableRefObject<HTMLCanvasElement | null>
-	canvas2Ref: React.MutableRefObject<HTMLCanvasElement | null>
-	canvasDumpRef: React.MutableRefObject<HTMLCanvasElement | null>
-	challenges: [boolean, (value: boolean) => void]
-}
+type Props = {
+	visible: boolean;
+	onClose: () => void;
+	forceUpdate: React.DispatchWithoutAction;
+	canvas1Ref: React.MutableRefObject<HTMLCanvasElement | null>;
+	canvas2Ref: React.MutableRefObject<HTMLCanvasElement | null>;
+	canvas3Ref: React.MutableRefObject<HTMLCanvasElement | null>;
+	challenges: [boolean, (value: boolean) => void];
+};
 
-const Toolbox = ({ visible, onClose, canvas1Ref, canvas2Ref, canvasDumpRef, challenges }: ToolboxProps) => {
-	const [waiting, setWaiting] = useState(false)
+export default ({ visible, onClose, forceUpdate, canvas1Ref, canvas2Ref, canvas3Ref, challenges }: Props) => {
+	const [targetCanvas, setTargetCanvas] = useState(canvas1Ref);
 
-	// basic upload/download
-
-	const upload = async ({ current: canvas }: React.MutableRefObject<HTMLCanvasElement | null>) => {
+	const load = async ({ current: canvas }: React.MutableRefObject<HTMLCanvasElement | null>) => {
 		if (!canvas) {
-			message.error(INTERNAL_ERROR_MESSAGE)
-			return
+			notification.error({ message: MESSAGES.INTERNAL_ERROR });
+			return;
 		}
 
-		const info = await remote.dialog.showOpenDialog({
-			title: `Selecione uma imagem para o ${canvas.title}`,
+		const { canceled, filePaths } = await remote.dialog.showOpenDialog({
+			title: `Selecione uma imagem para o ${canvas.dataset.title!}`,
 			buttonLabel: 'Selecionar',
 			filters: [
 				{
@@ -67,784 +47,686 @@ const Toolbox = ({ visible, onClose, canvas1Ref, canvas2Ref, canvasDumpRef, chal
 					extensions: SUPPORTED_IMAGE_TYPES.flatMap((imageType) => imageType.extensions),
 				},
 			],
-		})
+		});
 
-		if (info.canceled) {
-			return
+		if (canceled) {
+			return;
 		}
 
-		const filePath = info.filePaths[0]
+		const filePath = filePaths[0];
 
 		if ((await fs.stat(filePath)).size > 262144000) {
-			message.warn(
-				'A imagem selecionada tem tamanho maior que 256mb e, por questões de performance, não será carregada, por favor, escolha outra imagem.'
-			)
-			return
+			notification.warn({
+				message:
+					'A imagem selecionada tem tamanho maior que 256mb e, por questões de performance, não será carregada, por favor, escolha uma imagem menor.',
+			});
+			return;
 		}
 
-		return new Promise((resolve, reject) => {
-			const image = new Image()
+		const image = new Image();
 
-			image.addEventListener('load', () => {
-				canvas.width = image.width
-				canvas.height = image.height
-				canvas.getContext('2d')!.drawImage(image, 0, 0)
+		image.addEventListener('load', () => {
+			canvas.width = image.width;
+			canvas.height = image.height;
+			canvas.getContext('2d')!.drawImage(image, 0, 0);
 
-				message.success(`A imagem '${path.basename(filePath)}' foi adicionada com sucesso ao ${canvas.title}.`)
-				resolve()
-			})
+			forceUpdate();
 
-			image.addEventListener('error', (error) => {
-				message.error(`A imagem '${path.basename(filePath)}' parece estar corrompida ou não é válida.`)
-				reject(error)
-			})
+			notification.success({
+				message: `A imagem '${path.basename(filePath)}' foi adicionada com sucesso ao ${canvas.dataset.title!}.`,
+			});
+		});
 
-			image.src = filePath
-		})
-	}
+		image.addEventListener('error', () => {
+			notification.error({ message: `A imagem '${path.basename(filePath)}' parece estar corrompida ou é inválida.` });
+		});
 
-	const download = async ({ current: canvas }: React.MutableRefObject<HTMLCanvasElement | null>) => {
+		image.src = filePath;
+	};
+
+	const unload = async ({ current: canvas }: React.MutableRefObject<HTMLCanvasElement | null>) => {
 		if (!canvas) {
-			message.error(INTERNAL_ERROR_MESSAGE)
-			return
+			notification.error({ message: MESSAGES.INTERNAL_ERROR });
+			return;
 		}
 
 		if (!canvas.width && !canvas.height) {
-			message.info(`O ${canvas.title} está vazio.`)
-			return
+			notification.info({ message: MESSAGES.emptyCanvas(canvas.dataset.title!) });
+			return;
 		}
 
-		const info = await remote.dialog.showSaveDialog({
-			title: `Escolha um local e um nome para a imagem do ${canvas.title}`,
+		// fill the canvas with one black transparent pixel and set its width and height to 0 to hide it
+		setCanvasImage(new ImageData(1, 1), canvas);
+		canvas.width = 0;
+		canvas.height = 0;
+
+		forceUpdate();
+
+		notification.success({ message: `Imagem retirada do ${canvas.dataset.title!}.` });
+	};
+
+	const download = async ({ current: canvas }: React.MutableRefObject<HTMLCanvasElement | null>) => {
+		if (!canvas) {
+			notification.error({ message: MESSAGES.INTERNAL_ERROR });
+			return;
+		}
+
+		if (!canvas.width && !canvas.height) {
+			notification.info({ message: MESSAGES.emptyCanvas(canvas.dataset.title!) });
+			return;
+		}
+
+		const { canceled, filePath } = await remote.dialog.showSaveDialog({
+			title: `Escolha um local e um nome para a imagem do ${canvas.dataset.title!}`,
 			filters: SUPPORTED_IMAGE_TYPES,
-		})
+		});
 
-		if (info.canceled) {
-			return
+		if (canceled) {
+			return;
 		}
-
-		const { filePath } = info
 
 		if (!filePath) {
-			message.warn('Por favor, informe um nome para a imagem.')
-			return
+			notification.warn({ message: 'Por favor, informe um nome para a imagem.' });
+			return;
 		}
 
-		const choosenExtension = path.extname(filePath).replace('.', '')
+		const fileExtension = path.extname(filePath);
 
-		if (!choosenExtension) {
-			message.warn('Por favor, escolha uma extensão para a imagem.')
-			return
+		if (!fileExtension) {
+			notification.warn({ message: 'Por favor, escolha uma extensão para a imagem.' });
+			return;
 		}
 
-		// get the correct mime type
-		const mimeType = choosenExtension === 'jpg' ? 'jpeg' : choosenExtension === 'tif' ? 'tiff' : choosenExtension
+		let mimeType = fileExtension.replace('.', '');
 
-		// base64 data string without data type
-		const imageBase64 = canvas.toDataURL(`image/${mimeType}`).replace(`data:image/${mimeType};base64,`, '')
-
-		await fs.writeFile(filePath, Buffer.from(imageBase64, 'base64'))
-		message.success(`A imagem do ${canvas.title} foi salva com sucesso.`)
-	}
-
-	// greyscale
-
-	const [greyscaleRP, setGreyscaleRP] = useState(0)
-	const [greyscaleGP, setGreyscaleGP] = useState(0)
-	const [greyscaleBP, setGreyscaleBP] = useState(0)
-
-	const greyscale = (weighted?: boolean) => {
-		const { current: canvas } = canvas1Ref
-		const { current: canvasDump } = canvasDumpRef
-
-		if (!canvas || !canvasDump) {
-			message.error(INTERNAL_ERROR_MESSAGE)
-			return
+		// correct the mime type
+		if (mimeType === 'jpg') {
+			mimeType = 'image/jpeg';
+		} else if (mimeType === 'tif') {
+			mimeType = 'image/tiff';
+		} else {
+			mimeType = `image/${mimeType}`;
 		}
 
-		const { width, height } = canvas
+		// base64 data string without metadata
+		const imageBase64 = canvas.toDataURL(mimeType, 1).replace(`data:${mimeType};base64,`, '');
 
-		if (!width && !height) {
-			message.info(`O ${canvas.title} está vazio.`)
-			return
+		await fs.writeFile(filePath, Buffer.from(imageBase64, 'base64'));
+		notification.success({ message: `A imagem do ${canvas.dataset.title!} foi salva com sucesso.` });
+	};
+
+	// NEGATIVE
+
+	const canvasNegative = () => {
+		const { current: canvas } = targetCanvas;
+		const { current: canvas3 } = canvas3Ref;
+
+		if (!canvas || !canvas3) {
+			notification.error({ message: MESSAGES.INTERNAL_ERROR });
+			return;
 		}
 
-		const imageData = canvas.getContext('2d')!.getImageData(0, 0, width, height)
-
-		const mean = (r: number, g: number, b: number) =>
-			weighted ? (r * greyscaleRP + g * greyscaleGP + b * greyscaleBP) / 300 : (r + g + b) / 3
-
-		const { data } = imageData
-		// go through each pixel ([r, g, b, a]) in the image
-		for (let i = 0; i < data.length; i += 4) {
-			const average = mean(data[i], data[i + 1], data[i + 2])
-
-			data[i] = average
-			data[i + 1] = average
-			data[i + 2] = average
+		if (!canvas.width && !canvas.height) {
+			notification.info({ message: MESSAGES.emptyCanvas(canvas.dataset.title!) });
+			return;
 		}
 
-		canvasDump.width = width
-		canvasDump.height = height
-		canvasDump.getContext('2d')!.putImageData(imageData, 0, 0)
-	}
+		setCanvasImage(algorithms.negative(getCanvasImage(canvas)), canvas3);
 
-	// thresh
+		forceUpdate();
+	};
 
-	const [threshValue, setThreshValue] = useState(0)
+	// THRESH
 
-	const thresh = () => {
-		const { current: canvas } = canvas1Ref
-		const { current: canvasDump } = canvasDumpRef
+	const [canvasThreshValue, setCanvasThreshValue] = useState(0);
 
-		if (!canvas || !canvasDump) {
-			message.error(INTERNAL_ERROR_MESSAGE)
-			return
+	const canvasThresh = () => {
+		const { current: canvas } = targetCanvas;
+		const { current: canvas3 } = canvas3Ref;
+
+		if (!canvas || !canvas3) {
+			notification.error({ message: MESSAGES.INTERNAL_ERROR });
+			return;
 		}
 
-		const { width, height } = canvas
-
-		if (!width && !height) {
-			message.info(`O ${canvas.title} está vazio.`)
-			return
+		if (!canvas.width && !canvas.height) {
+			notification.info({ message: MESSAGES.emptyCanvas(canvas.dataset.title!) });
+			return;
 		}
 
-		const imageData = canvas.getContext('2d')!.getImageData(0, 0, width, height)
+		setCanvasImage(algorithms.thresh(getCanvasImage(canvas), canvasThreshValue), canvas3);
 
-		const mean = (r: number, g: number, b: number) => (r + g + b) / 3
+		forceUpdate();
+	};
 
-		const { data } = imageData
-		for (let i = 0; i < data.length; i += 4) {
-			const v = mean(data[i], data[i + 1], data[i + 2]) > threshValue ? 255 : 0
-			data[i] = v
-			data[i + 1] = v
-			data[i + 2] = v
+	// GREYSCALE
+
+	const [canvasGreyscaleRWeight, setCanvasGreyscaleRWeight] = useState(100);
+	const [canvasGreyscaleGWeight, setCanvasGreyscaleGWeight] = useState(100);
+	const [canvasGreyscaleBWeight, setCanvasGreyscaleBWeight] = useState(100);
+
+	const canvasGreyscale = (weighted?: boolean) => {
+		const { current: canvas } = targetCanvas;
+		const { current: canvas3 } = canvas3Ref;
+
+		if (!canvas || !canvas3) {
+			notification.error({ message: MESSAGES.INTERNAL_ERROR });
+			return;
 		}
 
-		canvasDump.width = width
-		canvasDump.height = height
-		canvasDump.getContext('2d')!.putImageData(imageData, 0, 0)
-	}
-
-	// negative
-
-	const negative = () => {
-		const { current: canvas } = canvas1Ref
-		const { current: canvasDump } = canvasDumpRef
-
-		if (!canvas || !canvasDump) {
-			message.error(INTERNAL_ERROR_MESSAGE)
-			return
+		if (!canvas.width && !canvas.height) {
+			notification.info({ message: MESSAGES.emptyCanvas(canvas.dataset.title!) });
+			return;
 		}
 
-		const { width, height } = canvas
+		setCanvasImage(
+			algorithms.greyscale(
+				getCanvasImage(canvas),
+				weighted ? { r: canvasGreyscaleRWeight, g: canvasGreyscaleGWeight, b: canvasGreyscaleBWeight } : undefined
+			),
+			canvas3
+		);
 
-		if (!width && !height) {
-			message.info(`O ${canvas.title} está vazio.`)
-			return
+		forceUpdate();
+	};
+
+	// NOISE
+
+	const [canvasNoiseRemovalType, setCanvasNoiseRemovalType] = useState(0); // 0 = Cross, 1 = X, 2 = 3x3
+
+	const canvasNoiseRemoval = () => {
+		const { current: canvas } = targetCanvas;
+		const { current: canvas3 } = canvas3Ref;
+
+		if (!canvas || !canvas3) {
+			notification.error({ message: MESSAGES.INTERNAL_ERROR });
+			return;
 		}
 
-		const imageData = canvas.getContext('2d')!.getImageData(0, 0, width, height)
-
-		const { data } = imageData
-		for (let i = 0; i < data.length; i += 4) {
-			data[i] = 255 - data[i]
-			data[i + 1] = 255 - data[i + 1]
-			data[i + 2] = 255 - data[i + 2]
+		if (!canvas.width && !canvas.height) {
+			notification.info({ message: MESSAGES.emptyCanvas(canvas.dataset.title!) });
+			return;
 		}
 
-		canvasDump.width = width
-		canvasDump.height = height
-		canvasDump.getContext('2d')!.putImageData(imageData, 0, 0)
-	}
+		setCanvasImage(algorithms.removeNoise(getCanvasImage(canvas), canvasNoiseRemovalType), canvas3);
 
-	// noise
+		forceUpdate();
+	};
 
-	const [noiseRemovalType, setNoiseRemovalType] = useState(0) // 0 = Cross, 1 = X, 2 = 3x3
+	// SUM / SUB
 
-	const removeNoise = () => {
-		const { current: canvas } = canvas1Ref
-		const { current: canvasDump } = canvasDumpRef
+	const [canvas1Amount, setCanvas1Amount] = useState(50);
+	const [canvas2Amount, setCanvas2Amount] = useState(50);
 
-		if (!canvas || !canvasDump) {
-			message.error(INTERNAL_ERROR_MESSAGE)
-			return
+	const canvasSum = () => {
+		const { current: canvas1 } = canvas1Ref;
+		const { current: canvas2 } = canvas2Ref;
+		const { current: canvas3 } = canvas3Ref;
+
+		if (!canvas1 || !canvas2 || !canvas3) {
+			notification.error({ message: MESSAGES.INTERNAL_ERROR });
+			return;
 		}
 
-		const { width, height } = canvas
-
-		if (!width && !height) {
-			message.info(`O ${canvas.title} está vazio.`)
-			return
+		if (!canvas1.width && !canvas1.height) {
+			notification.info({ message: MESSAGES.emptyCanvas(canvas1.dataset.title!) });
+			return;
 		}
 
-		const imageData = canvas.getContext('2d')!.getImageData(0, 0, width, height)
-
-		const median = (a: number[]) => a.sort((a, b) => a - b)[Math.floor(a.length / 2)]
-
-		const { data } = imageData
-
-		// get the pixel's neighbors channel
-		const getNeighborsChannel = (channel: number) => {
-			const top = channel - 4 * width
-			const bottom = channel + 4 * width
-
-			switch (noiseRemovalType) {
-				case 0: {
-					const left = channel - 4
-					const right = channel + 4
-
-					return [data[channel], data[top], data[bottom], data[left], data[right]]
-				}
-
-				case 1: {
-					const topLeft = top - 4
-					const topRight = top + 4
-					const bottomLeft = bottom - 4
-					const bottomRight = bottom + 4
-
-					return [data[channel], data[topLeft], data[topRight], data[bottomLeft], data[bottomRight]]
-				}
-
-				case 2: {
-					const left = channel - 4
-					const right = channel + 4
-					const topLeft = top - 4
-					const topRight = top + 4
-					const bottomLeft = bottom - 4
-					const bottomRight = bottom + 4
-
-					return [
-						data[channel],
-						data[top],
-						data[bottom],
-						data[left],
-						data[right],
-						data[topLeft],
-						data[topRight],
-						data[bottomLeft],
-						data[bottomRight],
-					]
-				}
-
-				default: {
-					return [255]
-				}
-			}
+		if (!canvas2.width && !canvas2.height) {
+			notification.info({ message: MESSAGES.emptyCanvas(canvas2.dataset.title!) });
+			return;
 		}
 
-		// ignore borders
-		for (let y = 1; y < height - 1; y++) {
-			for (let x = 1; x < width - 1; x++) {
-				// each pixel ([r,g,b,a]) starts at 'x * 4 + y * 4 * width'
-				const i = x * 4 + y * 4 * width
+		setCanvasImage(
+			algorithms.sum(getCanvasImage(canvas1), getCanvasImage(canvas2), canvas1Amount, canvas2Amount),
+			canvas3
+		);
 
-				// set the median (based on neighbors) of each channel ([r, g, b])
-				for (let j = 0; j < 3; j++) {
-					data[i + j] = median(getNeighborsChannel(i + j))
-				}
-			}
+		forceUpdate();
+	};
+
+	const canvasSub = () => {
+		const { current: canvas1 } = canvas1Ref;
+		const { current: canvas2 } = canvas2Ref;
+		const { current: canvas3 } = canvas3Ref;
+
+		if (!canvas1 || !canvas2 || !canvas3) {
+			notification.error({ message: MESSAGES.INTERNAL_ERROR });
+			return;
 		}
 
-		canvasDump.width = width
-		canvasDump.height = height
-		canvasDump.getContext('2d')!.putImageData(imageData, 0, 0)
-	}
-
-	// sum / sub
-
-	const [canvas1SumSubP, setCanvas1SumSubP] = useState(50)
-	const [canvas2SumSubP, setCanvas2SumSubP] = useState(50)
-
-	const sum = () => {
-		const { current: canvas1 } = canvas1Ref
-		const { current: canvas2 } = canvas2Ref
-		const { current: canvasDump } = canvasDumpRef
-
-		if (!canvas1 || !canvas2 || !canvasDump) {
-			message.error(INTERNAL_ERROR_MESSAGE)
-			return
+		if (!canvas1.width && !canvas1.height) {
+			notification.info({ message: MESSAGES.emptyCanvas(canvas1.dataset.title!) });
+			return;
 		}
 
-		const { width: canvas1Width, height: canvas1Height } = canvas1
-		const { width: canvas2Width, height: canvas2Height } = canvas2
-
-		if (!canvas1Width && !canvas1Height) {
-			message.info(`O ${canvas1.title} está vazio.`)
-			return
+		if (!canvas2.width && !canvas2.height) {
+			notification.info({ message: MESSAGES.emptyCanvas(canvas2.dataset.title!) });
+			return;
 		}
 
-		if (!canvas2Width && !canvas2Height) {
-			message.info(`O ${canvas2.title} está vazio.`)
-			return
-		}
+		setCanvasImage(
+			algorithms.sub(getCanvasImage(canvas1), getCanvasImage(canvas2), canvas1Amount, canvas2Amount),
+			canvas3
+		);
 
-		const width = Math.min(canvas1Width, canvas2Width)
-		const height = Math.min(canvas1Height, canvas2Height)
-
-		const imageData = new ImageData(width, height)
-		const { data: canvas1Data } = canvas1.getContext('2d')!.getImageData(0, 0, width, height)
-		const { data: canvas2Data } = canvas2.getContext('2d')!.getImageData(0, 0, width, height)
-
-		const { data } = imageData
-		// see this#removeNoise for more info about this loop
-		for (let y = 0; y < height; y++) {
-			for (let x = 0; x < width; x++) {
-				const i = x * 4 + y * 4 * width
-
-				for (let j = 0; j < 3; j++) {
-					const c = i + j // index of the pixel's channel
-					data[c] = (canvas1Data[c] * canvas1SumSubP + canvas2Data[c] * canvas2SumSubP) / 100
-				}
-
-				// set the opacity to 255, this is needed because the data was created by 'new ImageData'
-				data[i + 3] = 255
-			}
-		}
-
-		canvasDump.width = width
-		canvasDump.height = height
-		canvasDump.getContext('2d')!.putImageData(imageData, 0, 0)
-	}
-
-	const sub = () => {
-		const { current: canvas1 } = canvas1Ref
-		const { current: canvas2 } = canvas2Ref
-		const { current: canvasDump } = canvasDumpRef
-
-		if (!canvas1 || !canvas2 || !canvasDump) {
-			message.error(INTERNAL_ERROR_MESSAGE)
-			return
-		}
-
-		const { width: canvas1Width, height: canvas1Height } = canvas1
-		const { width: canvas2Width, height: canvas2Height } = canvas2
-
-		if (!canvas1Width && !canvas1Height) {
-			message.info(`O ${canvas1.title} está vazio.`)
-			return
-		}
-
-		if (!canvas2Width && !canvas2Height) {
-			message.info(`O ${canvas2.title} está vazio.`)
-			return
-		}
-
-		const width = Math.min(canvas1Width, canvas2Width)
-		const height = Math.min(canvas1Height, canvas2Height)
-
-		const imageData = new ImageData(width, height)
-		const { data: canvas1Data } = canvas1.getContext('2d')!.getImageData(0, 0, width, height)
-		const { data: canvas2Data } = canvas2.getContext('2d')!.getImageData(0, 0, width, height)
-
-		const { data } = imageData
-		// see this#removeNoise and this#sum for more info about this loop
-		for (let y = 0; y < height; y++) {
-			for (let x = 0; x < width; x++) {
-				const i = x * 4 + y * 4 * width
-
-				for (let j = 0; j < 3; j++) {
-					const c = i + j
-					data[c] = (canvas1Data[c] * canvas1SumSubP - canvas2Data[c] * canvas2SumSubP) / 100
-				}
-
-				data[i + 3] = 255
-			}
-		}
-
-		canvasDump.width = width
-		canvasDump.height = height
-		canvasDump.getContext('2d')!.putImageData(imageData, 0, 0)
-	}
+		forceUpdate();
+	};
 
 	return (
 		<Drawer
-			className="toolbox"
 			title="Caixa de ferramentas"
-			placement="left"
-			width={584}
 			visible={visible}
 			onClose={onClose}
+			placement="left"
+			width={600}
+			footer={
+				<Row justify="space-between" align="middle">
+					<Col flex="auto" offset={2} style={{ fontFamily: 'sans-serif', textAlign: 'center' }}>
+						<Text strong>Ademir J. Ferreira Júnior &lt;ademirj.ferreirajunior@gmail.com&gt;</Text>
+					</Col>
+
+					<Col span={2}>
+						<Tooltip placement="topRight" title="Abrir página do repositório github no navegador.">
+							<Button
+								type="link"
+								size="large"
+								icon={<GithubOutlined style={{ color: 'black' }} />}
+								href="https://github.com/Azganoth/dimp"
+								style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}
+							/>
+						</Tooltip>
+					</Col>
+				</Row>
+			}
 		>
-			<Row gutter={[8, 8]}>
-				<Col span={12}>
-					<Button
-						className="basic-action"
-						type="dashed"
-						size="large"
-						icon={<UploadOutlined />}
-						loading={waiting}
-						onClick={async () => {
-							setWaiting(true)
-							try {
-								await upload(canvas1Ref)
-							} finally {
-								setWaiting(false)
-							}
-						}}
-					>
-						Carregar imagem 1!
-					</Button>
+			<Row gutter={[8, 8]} align="middle">
+				<Col span={12} style={{ textAlign: 'center' }}>
+					<Text strong>Canvas 1</Text>
 				</Col>
-				<Col span={12}>
-					<Button
-						className="basic-action"
-						size="large"
-						icon={<DownloadOutlined />}
-						loading={waiting}
-						onClick={async () => {
-							setWaiting(true)
-							try {
-								await download(canvas1Ref)
-							} finally {
-								setWaiting(false)
-							}
-						}}
-					>
-						Salvar imagem 1!
-					</Button>
-				</Col>
-			</Row>
 
-			<Row gutter={[8, 8]}>
-				<Col span={12}>
-					<Button
-						className="basic-action"
-						type="dashed"
-						size="large"
-						icon={<UploadOutlined />}
-						loading={waiting}
-						onClick={async () => {
-							setWaiting(true)
-							try {
-								await upload(canvas2Ref)
-							} finally {
-								setWaiting(false)
-							}
-						}}
-					>
-						Carregar imagem 2!
-					</Button>
+				<Col span={12} style={{ textAlign: 'center' }}>
+					<Text strong>Canvas 2</Text>
 				</Col>
-				<Col span={12}>
-					<Button
-						className="basic-action"
-						size="large"
-						icon={<DownloadOutlined />}
-						loading={waiting}
-						onClick={async () => {
-							setWaiting(true)
-							try {
-								await download(canvas2Ref)
-							} finally {
-								setWaiting(false)
-							}
-						}}
-					>
-						Salvar imagem 2!
-					</Button>
-				</Col>
-			</Row>
 
-			<Row gutter={[8, 8]}>
-				<Col span={24}>
-					<Button
-						className="basic-action"
-						size="large"
-						icon={<DownloadOutlined />}
-						loading={waiting}
-						onClick={async () => {
-							setWaiting(true)
-							try {
-								await download(canvasDumpRef)
-							} finally {
-								setWaiting(false)
-							}
-						}}
-					>
-						Salvar imagem resultado!
-					</Button>
+				<Col span={4}>
+					<Tooltip placement="topLeft" title="Carregar uma imagem ao canvas.">
+						<Button size="large" icon={<UploadOutlined />} onClick={() => load(canvas1Ref)} style={{ width: '100%' }} />
+					</Tooltip>
+				</Col>
+
+				<Col span={4}>
+					<Tooltip title="Salvar a imagem do canvas.">
+						<Button
+							type="dashed"
+							size="large"
+							icon={<DownloadOutlined />}
+							onClick={() => download(canvas1Ref)}
+							style={{ width: '100%' }}
+						/>
+					</Tooltip>
+				</Col>
+
+				<Col span={4}>
+					<Tooltip placement="topRight" title="Retirar a imagem do canvas.">
+						<Button
+							danger
+							type="dashed"
+							size="large"
+							icon={<CloseOutlined />}
+							onClick={() => unload(canvas1Ref)}
+							style={{ width: '100%' }}
+						/>
+					</Tooltip>
+				</Col>
+
+				<Col span={4}>
+					<Tooltip placement="topLeft" title="Carregar uma imagem ao canvas.">
+						<Button size="large" icon={<UploadOutlined />} onClick={() => load(canvas2Ref)} style={{ width: '100%' }} />
+					</Tooltip>
+				</Col>
+
+				<Col span={4}>
+					<Tooltip title="Salvar a imagem do canvas.">
+						<Button
+							type="dashed"
+							size="large"
+							icon={<DownloadOutlined />}
+							onClick={() => download(canvas2Ref)}
+							style={{ width: '100%' }}
+						/>
+					</Tooltip>
+				</Col>
+
+				<Col span={4}>
+					<Tooltip placement="topRight" title="Retirar a imagem do canvas.">
+						<Button
+							danger
+							type="dashed"
+							size="large"
+							icon={<CloseOutlined />}
+							onClick={() => unload(canvas2Ref)}
+							style={{ width: '100%' }}
+						/>
+					</Tooltip>
+				</Col>
+
+				<Col span={8} style={{ textAlign: 'center' }}>
+					<Text strong>Canvas 3 (resultado)</Text>
+				</Col>
+
+				<Col span={8}>
+					<Tooltip placement="bottom" title="Salvar a imagem do canvas.">
+						<Button
+							type="dashed"
+							size="large"
+							icon={<DownloadOutlined />}
+							onClick={() => download(canvas3Ref)}
+							style={{ width: '100%' }}
+						/>
+					</Tooltip>
+				</Col>
+
+				<Col span={8}>
+					<Tooltip placement="bottom" title="Retirar a imagem do canvas.">
+						<Button
+							danger
+							type="dashed"
+							size="large"
+							icon={<CloseOutlined />}
+							onClick={() => unload(canvas3Ref)}
+							style={{ width: '100%' }}
+						/>
+					</Tooltip>
 				</Col>
 			</Row>
 
 			<Divider />
 
-			<Collapse accordion>
-				<Panel key="1" header="Tons de cinza">
+			<Tabs defaultActiveKey="1">
+				<TabPane tab="Negativa" key="1">
 					<Row justify="center">
 						<Col>
-							<Button
-								type="primary"
-								size="large"
-								icon={<ExperimentOutlined />}
-								onClick={() => {
-									greyscale()
+							<Button type="primary" size="large" icon={<ExperimentOutlined />} onClick={() => canvasNegative()}>
+								Aplicar negativa
+							</Button>
+						</Col>
+					</Row>
+				</TabPane>
+				<TabPane tab="Limiarização" key="2">
+					<Row gutter={[0, 32]} justify="center">
+						<Col span={20}>
+							<SliderInput
+								value={canvasThreshValue}
+								min={0}
+								max={255}
+								onChange={setCanvasThreshValue}
+								sliderProps={{
+									marks: {
+										0: '0',
+										63: '63',
+										127: '127',
+										191: '191',
+										255: '255',
+									},
 								}}
-							>
+								inputProps={{
+									size: 'large',
+								}}
+							/>
+						</Col>
+					</Row>
+
+					<Row justify="center">
+						<Col>
+							<Button type="primary" size="large" icon={<ExperimentOutlined />} onClick={() => canvasThresh()}>
+								Aplicar limiarização
+							</Button>
+						</Col>
+					</Row>
+				</TabPane>
+				<TabPane tab="Tons de cinza" key="3">
+					<Row justify="center">
+						<Col>
+							<Button type="primary" size="large" icon={<ExperimentOutlined />} onClick={() => canvasGreyscale()}>
 								Aplicar média aritmética
 							</Button>
 						</Col>
 					</Row>
 
-					<Divider />
+					<Divider dashed />
 
-					<Row gutter={[32, 24]} justify="center">
-						<Col>
-							<Space>
-								<Text strong>R</Text>
-								<PercentInput size="large" value={greyscaleRP} onChange={setGreyscaleRP} />
-							</Space>
+					<Row gutter={[0, 32]} justify="center" align="middle">
+						<Col span={2}>
+							<Text strong style={{ fontSize: '1.25rem' }}>
+								R
+							</Text>
 						</Col>
-						<Col>
-							<Space>
-								<Text strong>G</Text>
-								<PercentInput size="large" value={greyscaleGP} onChange={setGreyscaleGP} />
-							</Space>
+
+						<Col span={22}>
+							<SliderInput
+								value={canvasGreyscaleRWeight}
+								min={0}
+								max={100}
+								suffix="%"
+								onChange={setCanvasGreyscaleRWeight}
+								sliderProps={{
+									marks: {
+										0: '0%',
+										25: '25%',
+										50: '50%',
+										75: '75%',
+										100: '100%',
+									},
+									tooltipPlacement: 'left',
+								}}
+								inputProps={{
+									size: 'large',
+								}}
+							/>
 						</Col>
-						<Col>
-							<Space>
-								<Text strong>B</Text>
-								<PercentInput size="large" value={greyscaleBP} onChange={setGreyscaleBP} />
-							</Space>
+
+						<Col span={2}>
+							<Text strong style={{ fontSize: '1.25rem' }}>
+								G
+							</Text>
+						</Col>
+
+						<Col span={22}>
+							<SliderInput
+								value={canvasGreyscaleGWeight}
+								min={0}
+								max={100}
+								suffix="%"
+								onChange={setCanvasGreyscaleGWeight}
+								sliderProps={{
+									marks: {
+										0: '0%',
+										25: '25%',
+										50: '50%',
+										75: '75%',
+										100: '100%',
+									},
+									tooltipPlacement: 'left',
+								}}
+								inputProps={{
+									size: 'large',
+								}}
+							/>
+						</Col>
+
+						<Col span={2}>
+							<Text strong style={{ fontSize: '1.25rem' }}>
+								B
+							</Text>
+						</Col>
+						<Col span={22}>
+							<SliderInput
+								value={canvasGreyscaleBWeight}
+								min={0}
+								max={100}
+								suffix="%"
+								onChange={setCanvasGreyscaleBWeight}
+								sliderProps={{
+									marks: {
+										0: '0%',
+										25: '25%',
+										50: '50%',
+										75: '75%',
+										100: '100%',
+									},
+									tooltipPlacement: 'left',
+								}}
+								inputProps={{
+									size: 'large',
+								}}
+							/>
 						</Col>
 					</Row>
 
 					<Row justify="center">
 						<Col>
-							<Button
-								type="primary"
-								size="large"
-								icon={<ExperimentOutlined />}
-								onClick={() => {
-									greyscale(true)
-								}}
-							>
+							<Button type="primary" size="large" icon={<ExperimentOutlined />} onClick={() => canvasGreyscale(true)}>
 								Aplicar média ponderada
 							</Button>
 						</Col>
 					</Row>
-				</Panel>
-				<Panel key="2" header="Limiarização">
-					<Row gutter={[32, 24]} justify="center">
-						<Col span={12}>
-							<Slider
-								min={0}
-								max={255}
-								marks={{
-									0: '0',
-									63: '63',
-									127: '127',
-									191: '191',
-									255: '255',
-								}}
-								value={threshValue}
-								onChange={(value) => {
-									setThreshValue(typeof value === 'number' ? value : value[0])
-								}}
-							/>
-						</Col>
-						<Col span={8}>
-							<InputNumber
-								size="large"
-								min={0}
-								max={255}
-								parser={(value) => normalizeIntegerInput(value, 0, 255)}
-								value={threshValue}
-								onChange={(value) => {
-									setThreshValue(value ?? 0)
-								}}
-							/>
-						</Col>
-					</Row>
-
-					<Row justify="center">
+				</TabPane>
+				<TabPane tab="Ruídos" key="4">
+					<Row gutter={[0, 12]} justify="center" align="middle">
 						<Col>
-							<Button
-								type="primary"
-								size="large"
-								icon={<ExperimentOutlined />}
-								onClick={() => {
-									thresh()
-								}}
-							>
-								Aplicar limiarização
-							</Button>
-						</Col>
-					</Row>
-				</Panel>
-				<Panel key="3" header="Negativa">
-					<Row justify="center">
-						<Col>
-							<Button
-								type="primary"
-								size="large"
-								icon={<ExperimentOutlined />}
-								onClick={() => {
-									negative()
-								}}
-							>
-								Aplicar negativa
-							</Button>
-						</Col>
-					</Row>
-				</Panel>
-				<Panel key="4" header="Adição / Subtração">
-					<Row gutter={[0, 24]} justify="space-between">
-						<Col span={6}>
-							<Text strong>Imagem 1</Text>
-						</Col>
-						<Col span={10}>
-							<Slider
-								min={0}
-								max={100}
-								marks={{
-									0: '0',
-									25: '25',
-									50: '50',
-									75: '75',
-									100: '100',
-								}}
-								value={canvas1SumSubP}
-								onChange={(value) => {
-									setCanvas1SumSubP(typeof value === 'number' ? value : value[0])
-								}}
-							/>
-						</Col>
-						<Col span={6}>
-							<PercentInput size="large" value={canvas1SumSubP} onChange={setCanvas1SumSubP} />
-						</Col>
-					</Row>
-
-					<Row gutter={[0, 24]} justify="space-between">
-						<Col span={6}>
-							<Text strong>Imagem 2</Text>
-						</Col>
-						<Col span={10}>
-							<Slider
-								min={0}
-								max={100}
-								marks={{
-									0: '0',
-									25: '25',
-									50: '50',
-									75: '75',
-									100: '100',
-								}}
-								value={canvas2SumSubP}
-								onChange={(value) => {
-									setCanvas2SumSubP(typeof value === 'number' ? value : value[0])
-								}}
-							/>
-						</Col>
-						<Col span={6}>
-							<PercentInput size="large" value={canvas2SumSubP} onChange={setCanvas2SumSubP} />
+							<Text strong>Método</Text>
 						</Col>
 					</Row>
 
 					<Row gutter={[0, 24]} justify="center">
 						<Col>
-							<Button
-								type="primary"
+							<Radio.Group
+								buttonStyle="solid"
 								size="large"
-								icon={<ExperimentOutlined />}
-								onClick={() => {
-									sum()
-								}}
+								value={canvasNoiseRemovalType}
+								onChange={(e) => setCanvasNoiseRemovalType(e.target.value)}
 							>
-								Aplicar adição
-							</Button>
+								<Radio.Button value={0}>Cruz</Radio.Button>
+								<Radio.Button value={1}>X</Radio.Button>
+								<Radio.Button value={2}>3x3</Radio.Button>
+							</Radio.Group>
 						</Col>
 					</Row>
 
 					<Row justify="center">
 						<Col>
-							<Button
-								type="primary"
-								size="large"
-								icon={<ExperimentOutlined />}
-								onClick={() => {
-									sub()
-								}}
-							>
-								Aplicar subtração
-							</Button>
-						</Col>
-					</Row>
-				</Panel>
-				<Panel key="5" header="Ruídos">
-					<Row gutter={[0, 12]} justify="center">
-						<Radio.Group size="large" value={noiseRemovalType} onChange={(e) => setNoiseRemovalType(e.target.value)}>
-							<Col>
-								<Radio value={0}>Método Cruz</Radio>
-							</Col>
-							<Col>
-								<Radio value={1}>Método X</Radio>
-							</Col>
-							<Col>
-								<Radio value={2}>Método 3x3</Radio>
-							</Col>
-						</Radio.Group>
-					</Row>
-
-					<Row justify="center">
-						<Col>
-							<Tooltip title="O applicativo poderá congelar até o término desta rotina.">
-								<Button
-									type="primary"
-									size="large"
-									icon={<ExperimentOutlined />}
-									onClick={() => {
-										removeNoise()
-									}}
-								>
-									Eliminar ruidos
+							<Tooltip placement="bottom" title="O applicativo poderá congelar até o término desta rotina.">
+								<Button type="primary" size="large" icon={<ExperimentOutlined />} onClick={() => canvasNoiseRemoval()}>
+									Eliminar ruídos
 								</Button>
 							</Tooltip>
 						</Col>
 					</Row>
-				</Panel>
-				<Panel key="6" header="Equalização de histograma">
-					<p>sdfkl smn sdoqwo xcfgjh</p>
-				</Panel>
-				<Panel key="7" header="Desafios">
-					<Row gutter={[0, 24]} justify="center">
-						<List
-							header={<Text>Implementados:</Text>}
-							dataSource={['Marcação']}
-							renderItem={(item) => (
-								<List.Item>
-									<Text>{item}</Text>
-								</List.Item>
-							)}
-						/>
-					</Row>
+				</TabPane>
+				<TabPane tab="Adição / Subtração" key="5">
+					<Row gutter={[0, 32]} justify="center" align="middle">
+						<Col span={4}>
+							<Text strong>Canvas 1</Text>
+						</Col>
 
-					<Row justify="center">
-						<Col>
-							<Text strong>Ativar/Desativar</Text>
+						<Col span={18}>
+							<SliderInput
+								value={canvas1Amount}
+								min={0}
+								max={100}
+								suffix="%"
+								onChange={setCanvas1Amount}
+								sliderProps={{
+									marks: {
+										0: '0%',
+										25: '25%',
+										50: '50%',
+										75: '75%',
+										100: '100%',
+									},
+									tooltipPlacement: 'left',
+								}}
+								inputProps={{
+									size: 'large',
+								}}
+							/>
+						</Col>
+
+						<Col span={4}>
+							<Text strong>Canvas 2</Text>
+						</Col>
+
+						<Col span={18}>
+							<SliderInput
+								value={canvas2Amount}
+								min={0}
+								max={100}
+								suffix="%"
+								onChange={setCanvas2Amount}
+								sliderProps={{
+									marks: {
+										0: '0%',
+										25: '25%',
+										50: '50%',
+										75: '75%',
+										100: '100%',
+									},
+									tooltipPlacement: 'left',
+								}}
+								inputProps={{
+									size: 'large',
+								}}
+							/>
 						</Col>
 					</Row>
 
+					<Row gutter={24} justify="center">
+						<Col>
+							<Button type="primary" size="large" icon={<ExperimentOutlined />} onClick={() => canvasSum()}>
+								Aplicar adição
+							</Button>
+						</Col>
+
+						<Col>
+							<Button type="primary" size="large" icon={<ExperimentOutlined />} onClick={() => canvasSub()}>
+								Aplicar subtração
+							</Button>
+						</Col>
+					</Row>
+				</TabPane>
+				<TabPane tab="Equalização de histograma" key="6" disabled />
+				<TabPane tab="Desafios" key="7">
 					<Row justify="center">
 						<Col>
 							<Switch checked={challenges[0]} onChange={challenges[1]} />
 						</Col>
 					</Row>
-				</Panel>
-			</Collapse>
 
-			<Row gutter={[0, 16]} justify="space-between" align="middle">
+					<Divider dashed>Implementados</Divider>
+
+					<Row gutter={[0, 24]} align="middle">
+						{['Marcação'].map((challenge) => (
+							<Col key={challenge.toLowerCase()} span={24}>
+								<Text>{challenge}</Text>
+							</Col>
+						))}
+					</Row>
+				</TabPane>
+			</Tabs>
+
+			<Divider dashed>Canvas alvo</Divider>
+
+			<Row justify="center" align="middle">
 				<Col>
-					<Text>Ademir J. Ferreira Júnior &lt;ademirj.ferreirajunior@gmail.com&gt;</Text>
-				</Col>
-				<Col>
-					<Tooltip title="Abrir página do repositório github no navegador.">
-						<Button type="link" size="large" icon={<GithubOutlined />} href="https://github.com/Azganoth/dimp" />
-					</Tooltip>
+					<Radio.Group value={targetCanvas} onChange={(e) => setTargetCanvas(e.target.value)}>
+						<Radio.Button value={canvas1Ref}>Canvas 1</Radio.Button>
+						<Radio.Button value={canvas2Ref}>Canvas 2</Radio.Button>
+						<Radio.Button value={canvas3Ref}>Canvas 3 (resultado)</Radio.Button>
+					</Radio.Group>
 				</Col>
 			</Row>
 		</Drawer>
-	)
-}
-
-export default Toolbox
+	);
+};

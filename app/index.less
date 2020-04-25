@@ -1,0 +1,79 @@
+@import '~antd/dist/antd.less';
+
+// COLORS
+
+@primary: #8956ff;
+@secondary: #d9d9d9;
+@red: #ff5c57;
+@green: #5af78e;
+@yellow: #f3f99d;
+@blue: #57c7ff;
+@magenta: #ff6ac1;
+@cyan: #9aedfe;
+
+// THEME
+
+// main colors
+@primary-color: @primary;
+@link-color: @primary-color;
+
+// state colors
+@success-color: @green;
+@warning-color: @yellow;
+@error-color: @red;
+@disabled-color: hsla(0, 0%, 0%, 0.25);
+
+// major text font size
+@font-size-base: 14px;
+
+// text colors
+@heading-color: hsla(0, 0%, 0%, 0.85);
+@text-color: hsla(0, 0%, 0%, 0.65);
+@text-color-secondary: hsla(0, 0%, 0%, 0.45);
+
+// border
+@border-radius-base: 4px;
+@border-color-base: @secondary;
+
+// shadow for layers
+@box-shadow-base: 0 2px 8px hsla(0, 0%, 0%, 0.15);
+
+// COMPONENTS
+
+@striped-background: repeating-linear-gradient(-45deg, #f0f2f5, #f0f2f5 6px, white 6px, white 12px);
+
+.pixel-channel-showcase {
+	border-radius: 0 1rem;
+	width: 4rem;
+	height: 2.5rem;
+	color: black;
+	line-height: 2.5rem;
+	font-size: 1.5rem;
+	font-weight: bold;
+	text-align: center;
+
+	&#r-showcase {
+		background-color: @red;
+	}
+
+	&#g-showcase {
+		background-color: @green;
+	}
+
+	&#b-showcase {
+		background-color: @blue;
+	}
+
+	&#a-showcase {
+		background: @striped-background;
+	}
+}
+
+.canvas-wrapper {
+	overflow: auto;
+	max-height: 100%;
+
+	canvas {
+		background: @striped-background;
+	}
+}

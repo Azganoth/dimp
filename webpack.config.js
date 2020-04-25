@@ -125,18 +125,6 @@ module.exports = (webpackEnv) => {
 							use: getBasicCssLoaders(),
 						},
 						{
-							test: /\.s[ac]ss$/,
-							use: [
-								...getBasicCssLoaders({ importLoaders: 1 }),
-								{
-									loader: require.resolve('sass-loader'),
-									options: {
-										sourceMap: isProductionEnv,
-									},
-								},
-							],
-						},
-						{
 							test: /\.less$/,
 							use: [
 								...getBasicCssLoaders({ importLoaders: 1 }),
