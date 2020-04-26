@@ -71,7 +71,7 @@ const webpackConfig = require('../webpack.config');
 					});
 
 					app.once('close', () => {
-						app = null;
+						app = undefined;
 					});
 				}
 			});

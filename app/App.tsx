@@ -13,7 +13,7 @@ notification.config({
 	placement: 'bottomRight',
 });
 
-let borderMarker: BorderMarker | null = null;
+let borderMarker: BorderMarker | undefined;
 
 type PixelShowcase = {
 	r: number | 'R';
@@ -48,8 +48,11 @@ export default () => {
 
 	// CANVASES
 
+	// eslint-disable-next-line unicorn/no-null
 	const canvas1Ref = useRef<HTMLCanvasElement | null>(null);
+	// eslint-disable-next-line unicorn/no-null
 	const canvas2Ref = useRef<HTMLCanvasElement | null>(null);
+	// eslint-disable-next-line unicorn/no-null
 	const canvas3Ref = useRef<HTMLCanvasElement | null>(null);
 
 	const canvasMouseMove = ({ target, nativeEvent: { offsetX, offsetY } }: React.MouseEvent<HTMLCanvasElement>) => {
@@ -108,7 +111,7 @@ export default () => {
 
 		// border drawing
 		if (borderMarker) {
-			borderMarker = null;
+			borderMarker = undefined;
 		}
 	};
 
@@ -127,7 +130,7 @@ export default () => {
 
 		// border drawing
 		if (borderMarker) {
-			borderMarker = null;
+			borderMarker = undefined;
 		}
 	};
 
