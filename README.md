@@ -21,6 +21,10 @@ App for Digital Image Processing algorithms testing. 🧪
 
 ![No Active Canvases](/screenshots/dimp-no-active-canvases.png)
 
+### One active canvases
+
+![One Active Canvases](/screenshots/dimp-one-active-canvases.png)
+
 ### Two active canvases
 
 ![Two Active Canvases](/screenshots/dimp-two-active-canvases.png)
@@ -33,17 +37,33 @@ App for Digital Image Processing algorithms testing. 🧪
 
 ![Toolbox](/screenshots/dimp-toolbox.png)
 
-### Greyscale
+### Histogram
 
-![Greyscale](/screenshots/dimp-greyscale.png)
+![Histogram](/screenshots/dimp-histogram.png)
+
+### Negative
+
+![Negative](/screenshots/dimp-negative.png)
 
 ### Thresh
 
 ![Thresh](/screenshots/dimp-thresh.png)
 
-### Negative
+### Greyscale
 
-![Negative](/screenshots/dimp-negative.png)
+![Greyscale](/screenshots/dimp-greyscale.png)
+
+### Noise Removal (Cross)
+
+![Noise Removal Cross](/screenshots/dimp-noise-removal-cross.png)
+
+### Noise Removal (X)
+
+![Noise Removal (X)](/screenshots/dimp-noise-removal-x.png)
+
+### Noise Removal (3x3)
+
+![Noise Removal (3x3)](/screenshots/dimp-noise-removal-3x3.png)
 
 ### Sum 50-50
 
@@ -53,21 +73,9 @@ App for Digital Image Processing algorithms testing. 🧪
 
 ![Sub 50-50](/screenshots/dimp-sub-50-50.png)
 
-### Thresh (Cross)
+### Challenge (Border Marking)
 
-![Thresh Cross](/screenshots/dimp-thresh-cross.png)
-
-### Thresh (X)
-
-![Thresh (X)](/screenshots/dimp-thresh-x.png)
-
-### Thresh (3x3)
-
-![Thresh (3x3)](/screenshots/dimp-thresh-3x3.png)
-
-### Challenge (Border Drawing)
-
-![Challenge (Border Drawing)](/screenshots/dimp-challenge-border-drawing.png)
+![Challenge (Border Drawing)](/screenshots/dimp-challenge-border-marking.png)
 
 ## License
 
