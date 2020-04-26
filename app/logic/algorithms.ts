@@ -187,23 +187,25 @@ export const sum = (
 	image1Percentage: number,
 	image2Percentage: number
 ) => {
-	const width = Math.min(imageData1.width, imageData2.width);
+	const { data: dataImage1, width: widthImage1 } = imageData1;
+	const { data: dataImage2, width: widthImage2 } = imageData2;
+
+	const width = Math.min(widthImage1, widthImage2);
 	const height = Math.min(imageData1.height, imageData2.height);
 
 	const newImageData = new ImageData(width, height);
 
-	const { data: dataImage1 } = imageData1;
-	const { data: dataImage2 } = imageData2;
 	const { data } = newImageData;
 
 	// iterate through each pixel cartesian coordinate ([x,y]) in the image
 	for (let x = 0; x < width; x += 1) {
 		for (let y = 0; y < height; y += 1) {
 			const i = indexOfPixel(x, y, width);
+			const iImage1 = indexOfPixel(x, y, widthImage1);
+			const iImage2 = indexOfPixel(x, y, widthImage2);
 
 			for (let j = 0; j < 3; j += 1) {
-				const c = i + j;
-				data[c] = (dataImage1[c] * image1Percentage + dataImage2[c] * image2Percentage) / 100;
+				data[i + j] = (dataImage1[iImage1 + j] * image1Percentage + dataImage2[iImage2 + j] * image2Percentage) / 100;
 			}
 
 			// set the pixel opacity to 255, this is needed because new ImageData() sets every pixel opacity to 0
@@ -228,23 +230,25 @@ export const sub = (
 	image1Percentage: number,
 	image2Percentage: number
 ) => {
-	const width = Math.min(imageData1.width, imageData2.width);
+	const { data: dataImage1, width: widthImage1 } = imageData1;
+	const { data: dataImage2, width: widthImage2 } = imageData2;
+
+	const width = Math.min(widthImage1, widthImage2);
 	const height = Math.min(imageData1.height, imageData2.height);
 
 	const newImageData = new ImageData(width, height);
 
-	const { data: dataImage1 } = imageData1;
-	const { data: dataImage2 } = imageData2;
 	const { data } = newImageData;
 
 	// iterate through each pixel cartesian coordinate ([x,y]) in the image
 	for (let x = 0; x < width; x += 1) {
 		for (let y = 0; y < height; y += 1) {
 			const i = indexOfPixel(x, y, width);
+			const iImage1 = indexOfPixel(x, y, widthImage1);
+			const iImage2 = indexOfPixel(x, y, widthImage2);
 
 			for (let j = 0; j < 3; j += 1) {
-				const c = i + j;
-				data[c] = (dataImage1[c] * image1Percentage - dataImage2[c] * image2Percentage) / 100;
+				data[i + j] = (dataImage1[iImage1 + j] * image1Percentage - dataImage2[iImage2 + j] * image2Percentage) / 100;
 			}
 
 			// set the pixel opacity to 255, this is needed because new ImageData() sets every pixel opacity to 0
