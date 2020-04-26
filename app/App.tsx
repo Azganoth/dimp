@@ -1,12 +1,14 @@
 import React, { useReducer, useRef, useState } from 'react';
-import { Button, Col, Layout, Row, Space, Tooltip, notification } from 'antd';
+import { Button, Col, Layout, Modal, Row, Space, Tooltip, Typography, notification } from 'antd';
 import { BarChartOutlined, ToolOutlined } from '@ant-design/icons';
 
 import Toolbox from 'app/components/Toolbox';
+import Histogram from 'app/components/Histogram';
 import { getCanvasImage, setCanvasImage } from 'app/logic/helpers';
 import { BorderMarker } from 'app/logic/challenges';
 
 const { Header, Content } = Layout;
+const { Text } = Typography;
 
 notification.config({
 	duration: 2,
@@ -36,6 +38,16 @@ export default () => {
 	};
 
 	const [challenges, setChallenges] = useState(false);
+
+	const [histogramVisible, setHistogramVisible] = useState(false);
+
+	const openHistogram = () => {
+		setHistogramVisible(true);
+	};
+
+	const closeHistogram = () => {
+		setHistogramVisible(false);
+	};
 
 	// PIXEL SHOWCASE
 	// stores each channel value of the pixel below the mouse pointer (only when the mouse is inside a canvas)
@@ -150,6 +162,44 @@ export default () => {
 				challenges={[challenges, setChallenges]}
 			/>
 
+			<Modal
+				centered
+				destroyOnClose
+				title="Histogramas"
+				visible={histogramVisible}
+				width={600}
+				onOk={closeHistogram}
+				onCancel={closeHistogram}
+				okButtonProps={{ hidden: true }}
+				cancelButtonProps={{ hidden: true }}
+			>
+				<Row justify="center" align="middle">
+					<Col>
+						<Text strong>Canvas 1</Text>
+					</Col>
+
+					<Col span={24}>
+						<Histogram canvasRef={canvas1Ref} />
+					</Col>
+
+					<Col>
+						<Text strong>Canvas 2</Text>
+					</Col>
+
+					<Col span={24}>
+						<Histogram canvasRef={canvas2Ref} />
+					</Col>
+
+					<Col>
+						<Text strong>Canvas 3 (resultado)</Text>
+					</Col>
+
+					<Col span={24}>
+						<Histogram canvasRef={canvas3Ref} />
+					</Col>
+				</Row>
+			</Modal>
+
 			<Header style={{ padding: '0 1rem', background: 'white' }}>
 				<Row justify="center" align="middle">
 					<Col>
@@ -188,7 +238,13 @@ export default () => {
 
 					<Col>
 						<Tooltip placement="bottomLeft" title="Abrir histograma.">
-							<Button disabled type="primary" size="large" icon={<BarChartOutlined />} style={{ width: '5rem' }} />
+							<Button
+								type="primary"
+								size="large"
+								icon={<BarChartOutlined />}
+								onClick={openHistogram}
+								style={{ width: '5rem' }}
+							/>
 						</Tooltip>
 					</Col>
 				</Row>

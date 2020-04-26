@@ -254,3 +254,32 @@ export const sub = (
 
 	return newImageData;
 };
+
+export type HistogramRGBAColor = {
+	r: number;
+	g: number;
+	b: number;
+	a: number;
+};
+
+/**
+ * Returns a histogram array (0-255) of an image data.
+ *
+ * @param imageData The image data
+ */
+export const histogram = (imageData: ImageData) => {
+	const histo: HistogramRGBAColor[] = Array.from({ length: 256 }, () => ({ r: 0, g: 0, b: 0, a: 0 }));
+
+	const { data } = imageData;
+
+	// iterate through the image pixels ([r,g,b,a])
+	for (let i = 0; i < data.length; i += 4) {
+		// use each pixel channel value as an index in the `histo` array and increment the `histo[index]` value
+		histo[data[i]].r += 1;
+		histo[data[i + 1]].g += 1;
+		histo[data[i + 2]].b += 1;
+		histo[data[i + 3]].a += 1;
+	}
+
+	return histo;
+};
