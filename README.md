@@ -73,6 +73,10 @@ App for Digital Image Processing algorithms testing. 🧪
 
 ![Sub 50-50](/screenshots/dimp-sub-50-50.png)
 
+### Equalization
+
+![Equalization](/screenshots/dimp-equalization.png)
+
 ### Challenge (Border Marking)
 
 ![Challenge (Border Drawing)](/screenshots/dimp-challenge-border-marking.png)
