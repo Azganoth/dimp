@@ -44,7 +44,7 @@ type Props = {
 };
 
 export default ({ canvasRef }: Props) => {
-	const [histogramData, setHistogramData] = useState<algorithms.HistogramRGBAColor[]>([]);
+	const [histogramData, setHistogramData] = useState<algorithms.HistogramValue[]>([]);
 
 	useEffect(() => {
 		const { current: canvas } = canvasRef;

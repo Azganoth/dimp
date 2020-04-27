@@ -314,6 +314,27 @@ export default ({ visible, onClose, forceUpdate, canvas1Ref, canvas2Ref, canvas3
 		forceUpdate();
 	};
 
+	// EQUALIZATION
+
+	const canvasEqualization = (onlyValidPixels?: boolean) => {
+		const { current: canvas } = targetCanvas;
+		const { current: canvas3 } = canvas3Ref;
+
+		if (!canvas || !canvas3) {
+			notification.error({ message: MESSAGES.INTERNAL_ERROR });
+			return;
+		}
+
+		if (!canvas.width && !canvas.height) {
+			notification.info({ message: MESSAGES.emptyCanvas(canvas.dataset.title!) });
+			return;
+		}
+
+		setCanvasImage(algorithms.equalization(getCanvasImage(canvas), !!onlyValidPixels), canvas3);
+
+		forceUpdate();
+	};
+
 	return (
 		<Drawer
 			title="Caixa de ferramentas"
@@ -696,7 +717,28 @@ export default ({ visible, onClose, forceUpdate, canvas1Ref, canvas2Ref, canvas3
 						</Col>
 					</Row>
 				</TabPane>
-				<TabPane tab="Equalização de histograma" key="6" disabled />
+				<TabPane tab="Equalização de histograma" key="6">
+					<Row gutter={[0, 24]} justify="center">
+						<Col>
+							<Button type="primary" size="large" icon={<ExperimentOutlined />} onClick={() => canvasEqualization()}>
+								Equalizar
+							</Button>
+						</Col>
+					</Row>
+
+					<Row justify="center">
+						<Col>
+							<Button
+								type="primary"
+								size="large"
+								icon={<ExperimentOutlined />}
+								onClick={() => canvasEqualization(true)}
+							>
+								Equalizar apenas pixels válidos
+							</Button>
+						</Col>
+					</Row>
+				</TabPane>
 				<TabPane tab="Desafios" key="7">
 					<Row justify="center">
 						<Col>

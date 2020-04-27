@@ -259,7 +259,7 @@ export const sub = (
 	return newImageData;
 };
 
-export type HistogramRGBAColor = {
+export type HistogramValue = {
 	r: number;
 	g: number;
 	b: number;
@@ -272,7 +272,7 @@ export type HistogramRGBAColor = {
  * @param imageData The image data
  */
 export const histogram = (imageData: ImageData) => {
-	const histo: HistogramRGBAColor[] = Array.from({ length: 256 }, () => ({ r: 0, g: 0, b: 0, a: 0 }));
+	const histo: HistogramValue[] = Array.from({ length: 256 }, () => ({ r: 0, g: 0, b: 0, a: 0 }));
 
 	const { data } = imageData;
 
@@ -286,4 +286,83 @@ export const histogram = (imageData: ImageData) => {
 	}
 
 	return histo;
+};
+
+/**
+ * Returns the accumulated histogram.
+ *
+ * @param histo The histogram
+ */
+export const accumulateHistogram = (histo: HistogramValue[]) =>
+	histo.reduce((accHisto, { r, g, b, a }, index) => {
+		const { r: accR, g: accG, b: accB, a: accA } = index !== 0 ? accHisto[index - 1] : { r: 0, g: 0, b: 0, a: 0 };
+		accHisto.push({
+			r: r + accR,
+			g: g + accG,
+			b: b + accB,
+			a: a + accA,
+		});
+
+		return accHisto;
+	}, [] as HistogramValue[]);
+
+/**
+ * Returns an equalizated image.
+ *
+ * @param imageData The image data
+ * @param onlyValidPixels `true` if only the valid pixels (not black) will be considered, `false` otherwise
+ */
+export const equalization = (imageData: ImageData, onlyValidPixels: boolean) => {
+	const newImageData = cloneImageData(imageData);
+
+	const { data } = newImageData;
+
+	const histo = histogram(imageData);
+
+	const accumulatedHisto = accumulateHistogram(histo);
+
+	const histoShadesCount = onlyValidPixels
+		? histo.reduce(
+				(shadesCount, { r, g, b, a }) => {
+					if (r !== 0) {
+						shadesCount.r += 1;
+					}
+					if (g !== 0) {
+						shadesCount.g += 1;
+					}
+					if (b !== 0) {
+						shadesCount.b += 1;
+					}
+					if (a !== 0) {
+						shadesCount.a += 1;
+					}
+
+					return shadesCount;
+				},
+				{ r: 0, g: 0, b: 0, a: 0 }
+		  )
+		: { r: 256, g: 256, b: 256, a: 256 };
+
+	const histoMinPoint = onlyValidPixels
+		? {
+				r: histo.findIndex(({ r }) => r !== 0),
+				g: histo.findIndex(({ g }) => g !== 0),
+				b: histo.findIndex(({ b }) => b !== 0),
+				a: histo.findIndex(({ a }) => a !== 0),
+		  }
+		: { r: 0, g: 0, b: 0, a: 0 };
+
+	// store the number of pixels in the image (height * width)
+	const n = data.length / 4;
+
+	// iterate through the image pixels ([r,g,b,a])
+	for (let i = 0; i < data.length; i += 4) {
+		// set each color channel value to its equalized value
+		data[i] = accumulatedHisto[data[i]].r * ((histoShadesCount.r - 1) / n) + histoMinPoint.r;
+		data[i + 1] = histoMinPoint.g + ((histoShadesCount.g - 1) / n) * accumulatedHisto[data[i + 1]].g;
+		data[i + 2] = histoMinPoint.b + ((histoShadesCount.b - 1) / n) * accumulatedHisto[data[i + 2]].b;
+		data[i + 3] = histoMinPoint.a + ((histoShadesCount.a - 1) / n) * accumulatedHisto[data[i + 3]].a;
+	}
+
+	return newImageData;
 };
