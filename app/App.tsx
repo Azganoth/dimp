@@ -7,7 +7,7 @@ import Histogram from 'app/components/Histogram';
 import RegionSelection from 'app/logic/RegionSelection';
 import { getCanvasImage, setCanvasImage } from 'app/logic/helpers';
 import { ChallengesOptions, PixelShowcase } from 'app/logic/types';
-import { drawGreenBorder } from 'app/logic/challenges';
+import * as algorithms from 'app/logic/algorithms';
 
 const { Header, Content } = Layout;
 const { Text } = Typography;
@@ -37,13 +37,16 @@ export default () => {
 	// CHALLENGES
 
 	const [challengesOptions, setChallengesOptions] = useState<ChallengesOptions>({
-		borderMarking: { active: false },
+		borderMarking: { active: false, color: { r: 0, g: 255, b: 0, a: 255 } },
 	});
 
-	const updateChallengesOptions = (options: Partial<ChallengesOptions>) => {
+	const updateChallengesOptions = (
+		options: { [P in keyof ChallengesOptions]?: { [Q in keyof ChallengesOptions[P]]?: ChallengesOptions[P][Q] } }
+	) => {
 		setChallengesOptions({
 			borderMarking: {
 				active: options.borderMarking?.active ?? challengesOptions.borderMarking.active,
+				color: options.borderMarking?.color ?? challengesOptions.borderMarking.color,
 			},
 		});
 	};
@@ -100,7 +103,7 @@ export default () => {
 				setCanvasImage(imageData, canvas);
 
 				// mark the image with a green border and redraw the marked image into the canvas
-				setCanvasImage(drawGreenBorder(imageData, startX, startY, endX, endY), canvas);
+				setCanvasImage(algorithms.drawBorder(imageData, startX, startY, endX, endY, borderMarking.color), canvas);
 			}
 		}
 	};

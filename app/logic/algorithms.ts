@@ -1,5 +1,63 @@
 import { mean, weightedMean, median } from 'app/logic/math';
 import { cloneImageData, indexOfPixel } from 'app/logic/helpers';
+import { RGBAColor } from 'app/logic/types';
+
+/**
+ * Draws a border on the area specified by
+ * [`startX`, `startY`] and [`endX`, `endY`]
+ * in the image data and returns the marked image data.
+ *
+ * @param imageData The image data
+ * @param startX The starting x point
+ * @param startY The starting y point
+ * @param endX The ending x point
+ * @param endY The ending y point
+ * @param color The border color, defaults to green
+ */
+export const drawBorder = (
+	imageData: ImageData,
+	startX: number,
+	startY: number,
+	endX: number,
+	endY: number,
+	color: RGBAColor = { r: 0, g: 255, b: 0 }
+) => {
+	const newImageData = cloneImageData(imageData);
+
+	const { data, width } = newImageData;
+
+	const minX = Math.min(startX, endX);
+	const minY = Math.min(startY, endY);
+	const maxX = Math.max(startX, endX);
+	const maxY = Math.max(startY, endY);
+
+	const { r, g, b, a = 255 } = color;
+
+	// iterate through each horizontal pixel coordinate from minX to maxX
+	for (let x = minX; x <= maxX; x += 1) {
+		// set the color of the two pixels from the top and bottom border
+		[indexOfPixel(x, startY, width), indexOfPixel(x, endY, width)].forEach((i) => {
+			data[i] = r;
+			data[i + 1] = g;
+			data[i + 2] = b;
+			data[i + 3] = a;
+		});
+	}
+
+	// iterate through each vertical pixel coordinate from minY + 1 to maxY - 1
+	// ignore the first and last pixels because they are already marked by the horizontal iteration
+	for (let y = minY + 1; y < maxY; y += 1) {
+		// set the color of the two pixels from the left and right border
+		[indexOfPixel(startX, y, width), indexOfPixel(endX, y, width)].forEach((i) => {
+			data[i] = r;
+			data[i + 1] = g;
+			data[i + 2] = b;
+			data[i + 3] = a;
+		});
+	}
+
+	return newImageData;
+};
 
 /**
  * Returns a completely desaturated image.

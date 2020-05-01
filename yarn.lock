@@ -135,6 +135,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@icons/material@npm:^0.2.4":
+  version: 0.2.4
+  resolution: "@icons/material@npm:0.2.4"
+  peerDependencies:
+    react: "*"
+  checksum: 2/10b1841bfb7f1b6735d8ebe32a18bbbff96221bd42afa9ce7acd87c09d467d5c6468ad2e220dd739dd2e49c4aed09d62cbf06942890265002e0f769afeb1f5ad
+  languageName: node
+  linkType: hard
+
 "@sindresorhus/is@npm:^0.14.0":
   version: 0.14.0
   resolution: "@sindresorhus/is@npm:0.14.0"
@@ -305,6 +314,15 @@ __metadata:
   version: 1.5.2
   resolution: "@types/q@npm:1.5.2"
   checksum: 2/e3d8fcf9aaf9e0c597b9279a7ffe8f0b96f71a7e921bf986ee735e7f698e88f629414d759ab401a71dc38cee7f88ef2d15e4811fec14c37aab3f9f7abe3b1371
+  languageName: node
+  linkType: hard
+
+"@types/react-color@npm:3.0.1":
+  version: 3.0.1
+  resolution: "@types/react-color@npm:3.0.1"
+  dependencies:
+    "@types/react": "*"
+  checksum: 2/c270b2db79a1bd78273b7b19184ba6a009002b4ce5d2a8d65da21113a3d22adbcb730c56befb22c52c4aceffcf83cff86bc4030fa3a3c6c9f733b5341722a861
   languageName: node
   linkType: hard
 
@@ -2812,6 +2830,7 @@ __metadata:
     "@types/node": ^12.12.37
     "@types/optimize-css-assets-webpack-plugin": ^5.0.1
     "@types/react": ^16.9.34
+    "@types/react-color": 3.0.1
     "@types/react-dom": ^16.9.6
     "@types/recharts": 1.8.10
     "@types/terser-webpack-plugin": ^2.2.0
@@ -2846,6 +2865,7 @@ __metadata:
     optimize-css-assets-webpack-plugin: ^5.0.3
     prettier: ^2.0.5
     react: ^16.13.1
+    react-color: ^2.18.0
     react-dom: ^16.13.1
     recharts: ^1.8.5
     style-loader: ^1.2.0
@@ -5707,7 +5727,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"lodash@npm:^4.17.10, lodash@npm:^4.17.13, lodash@npm:^4.17.14, lodash@npm:^4.17.15, lodash@npm:^4.17.5, lodash@npm:~4.17.4":
+"lodash@npm:^4.0.1, lodash@npm:^4.17.10, lodash@npm:^4.17.11, lodash@npm:^4.17.13, lodash@npm:^4.17.14, lodash@npm:^4.17.15, lodash@npm:^4.17.5, lodash@npm:~4.17.4":
   version: 4.17.15
   resolution: "lodash@npm:4.17.15"
   checksum: 2/aec3fbb7570aa67bda500b8299b1b1821d60646bede87f76a74dfcc7666ab3445267d734ec71424d70809d52ad67a1356fab5ab694a3faa1908d68e9d48f00f5
@@ -5798,6 +5818,13 @@ __metadata:
   dependencies:
     escape-string-regexp: ^2.0.0
   checksum: 2/dc05a170efb4507a276c8b656c71fa86019a9fcdbedd6f17da81304729124f4121f98d113342ef5814e8d67a55da4872658eadf7d13a98192f36e9b5935e9750
+  languageName: node
+  linkType: hard
+
+"material-colors@npm:^1.2.1":
+  version: 1.2.6
+  resolution: "material-colors@npm:1.2.6"
+  checksum: 2/15883150a32abdb79638175b320712621a2962200ca3c09dfa0d5e3b614c081a0d459058ae367714f133801b8d9779f4137ddda4f2fbcaf8038a4624ab32c037
   languageName: node
   linkType: hard
 
@@ -8123,6 +8150,20 @@ __metadata:
   languageName: node
   linkType: hard
 
+"react-color@npm:^2.18.0":
+  version: 2.18.0
+  resolution: "react-color@npm:2.18.0"
+  dependencies:
+    "@icons/material": ^0.2.4
+    lodash: ^4.17.11
+    material-colors: ^1.2.1
+    prop-types: ^15.5.10
+    reactcss: ^1.2.0
+    tinycolor2: ^1.4.1
+  checksum: 2/b0cc66661ebb7ed9d2f3e1c7e17751de99e2cf27557dd589a61bf01889e4007f90e9ebd297ca93946b1132689decdbc0571962731505eca72838eb364cf82f0a
+  languageName: node
+  linkType: hard
+
 "react-dom@npm:^16.13.1":
   version: 16.13.1
   resolution: "react-dom@npm:16.13.1"
@@ -8203,6 +8244,15 @@ __metadata:
     object-assign: ^4.1.1
     prop-types: ^15.6.2
   checksum: 2/13dcc9ba8a7521ecc3d7e69998dbc5703ae9515308d06a94a474ad34b42f1fc109372265e924a8c9b11d20fa1828407c290b8f61617c36734c4ca907ae7e5f45
+  languageName: node
+  linkType: hard
+
+"reactcss@npm:^1.2.0":
+  version: 1.2.3
+  resolution: "reactcss@npm:1.2.3"
+  dependencies:
+    lodash: ^4.0.1
+  checksum: 2/90fcf85d800293e2875a6e2d146765ec6e6958b2fa99542ee06a17f2dd7154e5eb116ca551718f684ea04be7841775e3d633e5ceeb3da82f990367bd4c28d3ad
   languageName: node
   linkType: hard
 

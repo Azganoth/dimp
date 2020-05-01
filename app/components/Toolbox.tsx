@@ -5,6 +5,7 @@ import { remote } from 'electron';
 import path from 'path';
 import { promises as fs } from 'fs';
 
+import ColorPicker from 'app/components/ui/ColorPicker';
 import SliderInput from 'app/components/ui/SliderInput';
 import { MESSAGES, getCanvasImage, setCanvasImage } from 'app/logic/helpers';
 import { ChallengesOptions } from 'app/logic/types';
@@ -28,7 +29,9 @@ type Props = {
 	canvas2Ref: React.MutableRefObject<HTMLCanvasElement | null>;
 	canvas3Ref: React.MutableRefObject<HTMLCanvasElement | null>;
 	challengesOptions: ChallengesOptions;
-	updateChallengesOptions: (value: Partial<ChallengesOptions>) => void;
+	updateChallengesOptions: (
+		value: { [P in keyof ChallengesOptions]?: { [Q in keyof ChallengesOptions[P]]?: ChallengesOptions[P][Q] } }
+	) => void;
 };
 
 export default ({
@@ -751,15 +754,23 @@ export default ({
 					</Row>
 				</TabPane>
 				<TabPane tab="Desafios" key="7">
-					<Row gutter={[0, 24]} align="middle">
-						<Col span={12}>
-							<Text>Marcação</Text>
-						</Col>
-
-						<Col span={6}>
+					<Row gutter={[24, 24]} align="middle">
+						<Col>
 							<Switch
 								checked={challengesOptions.borderMarking.active}
 								onChange={(value) => updateChallengesOptions({ borderMarking: { active: value } })}
+							/>
+						</Col>
+
+						<Col flex="auto">
+							<Text>Marcação</Text>
+						</Col>
+
+						<Col>
+							<ColorPicker
+								value={challengesOptions.borderMarking.color}
+								onChange={(value) => updateChallengesOptions({ borderMarking: { color: value } })}
+								colorPickerProps={{ disableAlpha: true }}
 							/>
 						</Col>
 					</Row>
