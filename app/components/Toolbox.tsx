@@ -7,6 +7,7 @@ import { promises as fs } from 'fs';
 
 import SliderInput from 'app/components/ui/SliderInput';
 import { MESSAGES, getCanvasImage, setCanvasImage } from 'app/logic/helpers';
+import { ChallengesOptions } from 'app/logic/types';
 import * as algorithms from 'app/logic/algorithms';
 
 const { Text } = Typography;
@@ -26,10 +27,20 @@ type Props = {
 	canvas1Ref: React.MutableRefObject<HTMLCanvasElement | null>;
 	canvas2Ref: React.MutableRefObject<HTMLCanvasElement | null>;
 	canvas3Ref: React.MutableRefObject<HTMLCanvasElement | null>;
-	challenges: [boolean, (value: boolean) => void];
+	challengesOptions: ChallengesOptions;
+	updateChallengesOptions: (value: Partial<ChallengesOptions>) => void;
 };
 
-export default ({ visible, onClose, forceUpdate, canvas1Ref, canvas2Ref, canvas3Ref, challenges }: Props) => {
+export default ({
+	visible,
+	onClose,
+	forceUpdate,
+	canvas1Ref,
+	canvas2Ref,
+	canvas3Ref,
+	challengesOptions,
+	updateChallengesOptions,
+}: Props) => {
 	const [targetCanvas, setTargetCanvas] = useState(canvas1Ref);
 
 	const load = async ({ current: canvas }: React.MutableRefObject<HTMLCanvasElement | null>) => {
@@ -740,20 +751,17 @@ export default ({ visible, onClose, forceUpdate, canvas1Ref, canvas2Ref, canvas3
 					</Row>
 				</TabPane>
 				<TabPane tab="Desafios" key="7">
-					<Row justify="center">
-						<Col>
-							<Switch checked={challenges[0]} onChange={challenges[1]} />
-						</Col>
-					</Row>
-
-					<Divider dashed>Implementados</Divider>
-
 					<Row gutter={[0, 24]} align="middle">
-						{['Marcação'].map((challenge) => (
-							<Col key={challenge.toLowerCase()} span={24}>
-								<Text>{challenge}</Text>
-							</Col>
-						))}
+						<Col span={12}>
+							<Text>Marcação</Text>
+						</Col>
+
+						<Col span={6}>
+							<Switch
+								checked={challengesOptions.borderMarking.active}
+								onChange={(value) => updateChallengesOptions({ borderMarking: { active: value } })}
+							/>
+						</Col>
 					</Row>
 				</TabPane>
 			</Tabs>

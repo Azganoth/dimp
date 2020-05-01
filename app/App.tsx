@@ -4,8 +4,10 @@ import { BarChartOutlined, ToolOutlined } from '@ant-design/icons';
 
 import Toolbox from 'app/components/Toolbox';
 import Histogram from 'app/components/Histogram';
+import RegionSelection from 'app/logic/RegionSelection';
 import { getCanvasImage, setCanvasImage } from 'app/logic/helpers';
-import { BorderMarker } from 'app/logic/challenges';
+import { ChallengesOptions, PixelShowcase } from 'app/logic/types';
+import { drawGreenBorder } from 'app/logic/challenges';
 
 const { Header, Content } = Layout;
 const { Text } = Typography;
@@ -15,17 +17,12 @@ notification.config({
 	placement: 'bottomRight',
 });
 
-let borderMarker: BorderMarker | undefined;
-
-type PixelShowcase = {
-	r: number | 'R';
-	g: number | 'G';
-	b: number | 'B';
-	a: number | 'A';
-};
+let regionSelection: RegionSelection | undefined;
 
 export default () => {
 	const [, forceUpdate] = useReducer((x) => x + 1, 0);
+
+	// TOOLBOX
 
 	const [toolboxVisible, setToolboxVisible] = useState(false);
 
@@ -37,7 +34,21 @@ export default () => {
 		setToolboxVisible(false);
 	};
 
-	const [challenges, setChallenges] = useState(false);
+	// CHALLENGES
+
+	const [challengesOptions, setChallengesOptions] = useState<ChallengesOptions>({
+		borderMarking: { active: false },
+	});
+
+	const updateChallengesOptions = (options: Partial<ChallengesOptions>) => {
+		setChallengesOptions({
+			borderMarking: {
+				active: options.borderMarking?.active ?? challengesOptions.borderMarking.active,
+			},
+		});
+	};
+
+	// HISTOGRAM
 
 	const [histogramVisible, setHistogramVisible] = useState(false);
 
@@ -77,19 +88,20 @@ export default () => {
 		const [r, g, b, a] = canvas.getContext('2d')!.getImageData(offsetX, offsetY, 1, 1).data;
 		updatePixelShowcase({ r, g, b, a });
 
-		if (!challenges) {
-			return;
-		}
+		if (regionSelection) {
+			regionSelection.updateEndPoint(offsetX, offsetY);
 
-		// border drawing
-		if (borderMarker) {
-			const { imageData } = borderMarker;
+			const { borderMarking } = challengesOptions;
 
-			// undo last marked border using the original image data
-			setCanvasImage(imageData, canvas);
+			if (borderMarking.active) {
+				const { imageData, startX, startY, endX, endY } = regionSelection;
 
-			// mark the image with a green border and redraw the image into the canvas
-			setCanvasImage(borderMarker.draw(offsetX, offsetY), canvas);
+				// undo last marked border using the original image data
+				setCanvasImage(imageData, canvas);
+
+				// mark the image with a green border and redraw the marked image into the canvas
+				setCanvasImage(drawGreenBorder(imageData, startX, startY, endX, endY), canvas);
+			}
 		}
 	};
 
@@ -100,13 +112,8 @@ export default () => {
 			return;
 		}
 
-		if (!challenges) {
-			return;
-		}
-
-		// border drawing
-		if (!borderMarker) {
-			borderMarker = new BorderMarker(getCanvasImage(canvas), offsetX, offsetY);
+		if (!regionSelection) {
+			regionSelection = new RegionSelection(getCanvasImage(canvas), offsetX, offsetY);
 		}
 	};
 
@@ -117,13 +124,8 @@ export default () => {
 			return;
 		}
 
-		if (!challenges) {
-			return;
-		}
-
-		// border drawing
-		if (borderMarker) {
-			borderMarker = undefined;
+		if (regionSelection) {
+			regionSelection = undefined;
 		}
 	};
 
@@ -136,13 +138,8 @@ export default () => {
 
 		updatePixelShowcase();
 
-		if (!challenges) {
-			return;
-		}
-
-		// border drawing
-		if (borderMarker) {
-			borderMarker = undefined;
+		if (regionSelection) {
+			regionSelection = undefined;
 		}
 	};
 
@@ -159,7 +156,8 @@ export default () => {
 				canvas1Ref={canvas1Ref}
 				canvas2Ref={canvas2Ref}
 				canvas3Ref={canvas3Ref}
-				challenges={[challenges, setChallenges]}
+				challengesOptions={challengesOptions}
+				updateChallengesOptions={updateChallengesOptions}
 			/>
 
 			<Modal
