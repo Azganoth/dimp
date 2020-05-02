@@ -7,19 +7,13 @@ import { promises as fs } from 'fs';
 
 import ColorPicker from 'app/components/ui/ColorPicker';
 import SliderInput from 'app/components/ui/SliderInput';
-import { MESSAGES, getCanvasImage, setCanvasImage } from 'app/logic/helpers';
+import { MESSAGES, SUPPORTED_IMAGE_TYPES } from 'app/logic/constants';
+import { getCanvasImage, setCanvasImage } from 'app/logic/helpers';
 import { ChallengesOptions } from 'app/logic/types';
 import * as algorithms from 'app/logic/algorithms';
 
 const { Text } = Typography;
 const { TabPane } = Tabs;
-
-const SUPPORTED_IMAGE_TYPES = [
-	{ name: 'Imagem PNG', extensions: ['png'] },
-	{ name: 'Imagem JPEG', extensions: ['jpg', 'jpeg'] },
-	{ name: 'Imagem BMP', extensions: ['bmp'] },
-	{ name: 'Imagem TIFF', extensions: ['tif', 'tiff'] },
-];
 
 type Props = {
 	visible: boolean;
@@ -104,12 +98,12 @@ export default ({
 			return;
 		}
 
-		if (!canvas.width && !canvas.height) {
-			notification.info({ message: MESSAGES.emptyCanvas(canvas.dataset.title!) });
+		if (!canvas.width || !canvas.height) {
+			notification.info({ message: MESSAGES.empty(canvas.dataset.title!) });
 			return;
 		}
 
-		// fill the canvas with one black transparent pixel and set its width and height to 0 to hide it
+		// fill the canvas with one black transparent pixel and set its width and height to 0, hiding it
 		setCanvasImage(new ImageData(1, 1), canvas);
 		canvas.width = 0;
 		canvas.height = 0;
@@ -125,8 +119,8 @@ export default ({
 			return;
 		}
 
-		if (!canvas.width && !canvas.height) {
-			notification.info({ message: MESSAGES.emptyCanvas(canvas.dataset.title!) });
+		if (!canvas.width || !canvas.height) {
+			notification.info({ message: MESSAGES.empty(canvas.dataset.title!) });
 			return;
 		}
 
@@ -166,6 +160,7 @@ export default ({
 		const imageBase64 = canvas.toDataURL(mimeType, 1).replace(`data:${mimeType};base64,`, '');
 
 		await fs.writeFile(filePath, Buffer.from(imageBase64, 'base64'));
+
 		notification.success({ message: `A imagem do ${canvas.dataset.title!} foi salva com sucesso.` });
 	};
 
@@ -180,8 +175,8 @@ export default ({
 			return;
 		}
 
-		if (!canvas.width && !canvas.height) {
-			notification.info({ message: MESSAGES.emptyCanvas(canvas.dataset.title!) });
+		if (!canvas.width || !canvas.height) {
+			notification.info({ message: MESSAGES.empty(canvas.dataset.title!) });
 			return;
 		}
 
@@ -192,7 +187,7 @@ export default ({
 
 	// THRESH
 
-	const [canvasThreshValue, setCanvasThreshValue] = useState(0);
+	const [canvasThreshValue, setCanvasThreshValue] = useState(127);
 
 	const canvasThresh = () => {
 		const { current: canvas } = targetCanvas;
@@ -203,8 +198,8 @@ export default ({
 			return;
 		}
 
-		if (!canvas.width && !canvas.height) {
-			notification.info({ message: MESSAGES.emptyCanvas(canvas.dataset.title!) });
+		if (!canvas.width || !canvas.height) {
+			notification.info({ message: MESSAGES.empty(canvas.dataset.title!) });
 			return;
 		}
 
@@ -228,8 +223,8 @@ export default ({
 			return;
 		}
 
-		if (!canvas.width && !canvas.height) {
-			notification.info({ message: MESSAGES.emptyCanvas(canvas.dataset.title!) });
+		if (!canvas.width || !canvas.height) {
+			notification.info({ message: MESSAGES.empty(canvas.dataset.title!) });
 			return;
 		}
 
@@ -246,7 +241,7 @@ export default ({
 
 	// NOISE
 
-	const [canvasNoiseRemovalType, setCanvasNoiseRemovalType] = useState(0); // 0 = Cross, 1 = X, 2 = 3x3
+	const [canvasNoiseRemovalType, setCanvasNoiseRemovalType] = useState<'cross' | 'x' | '3x3'>('cross');
 
 	const canvasNoiseRemoval = () => {
 		const { current: canvas } = targetCanvas;
@@ -257,8 +252,8 @@ export default ({
 			return;
 		}
 
-		if (!canvas.width && !canvas.height) {
-			notification.info({ message: MESSAGES.emptyCanvas(canvas.dataset.title!) });
+		if (!canvas.width || !canvas.height) {
+			notification.info({ message: MESSAGES.empty(canvas.dataset.title!) });
 			return;
 		}
 
@@ -269,8 +264,8 @@ export default ({
 
 	// SUM / SUB
 
-	const [canvas1Amount, setCanvas1Amount] = useState(50);
-	const [canvas2Amount, setCanvas2Amount] = useState(50);
+	const [canvasSumSub1Amount, setCanvasSumSub1Amount] = useState(50);
+	const [canvasSumSub2Amount, setCanvasSumSub2Amount] = useState(50);
 
 	const canvasSum = () => {
 		const { current: canvas1 } = canvas1Ref;
@@ -282,18 +277,18 @@ export default ({
 			return;
 		}
 
-		if (!canvas1.width && !canvas1.height) {
-			notification.info({ message: MESSAGES.emptyCanvas(canvas1.dataset.title!) });
+		if (!canvas1.width || !canvas1.height) {
+			notification.info({ message: MESSAGES.empty(canvas1.dataset.title!) });
 			return;
 		}
 
-		if (!canvas2.width && !canvas2.height) {
-			notification.info({ message: MESSAGES.emptyCanvas(canvas2.dataset.title!) });
+		if (!canvas2.width || !canvas2.height) {
+			notification.info({ message: MESSAGES.empty(canvas2.dataset.title!) });
 			return;
 		}
 
 		setCanvasImage(
-			algorithms.sum(getCanvasImage(canvas1), getCanvasImage(canvas2), canvas1Amount, canvas2Amount),
+			algorithms.sum(getCanvasImage(canvas1), getCanvasImage(canvas2), canvasSumSub1Amount, canvasSumSub2Amount),
 			canvas3
 		);
 
@@ -310,18 +305,18 @@ export default ({
 			return;
 		}
 
-		if (!canvas1.width && !canvas1.height) {
-			notification.info({ message: MESSAGES.emptyCanvas(canvas1.dataset.title!) });
+		if (!canvas1.width || !canvas1.height) {
+			notification.info({ message: MESSAGES.empty(canvas1.dataset.title!) });
 			return;
 		}
 
-		if (!canvas2.width && !canvas2.height) {
-			notification.info({ message: MESSAGES.emptyCanvas(canvas2.dataset.title!) });
+		if (!canvas2.width || !canvas2.height) {
+			notification.info({ message: MESSAGES.empty(canvas2.dataset.title!) });
 			return;
 		}
 
 		setCanvasImage(
-			algorithms.sub(getCanvasImage(canvas1), getCanvasImage(canvas2), canvas1Amount, canvas2Amount),
+			algorithms.sub(getCanvasImage(canvas1), getCanvasImage(canvas2), canvasSumSub1Amount, canvasSumSub2Amount),
 			canvas3
 		);
 
@@ -330,7 +325,7 @@ export default ({
 
 	// EQUALIZATION
 
-	const canvasEqualization = (onlyValidPixels?: boolean) => {
+	const canvasEqualization = (onlyValidPixels = false) => {
 		const { current: canvas } = targetCanvas;
 		const { current: canvas3 } = canvas3Ref;
 
@@ -339,12 +334,12 @@ export default ({
 			return;
 		}
 
-		if (!canvas.width && !canvas.height) {
-			notification.info({ message: MESSAGES.emptyCanvas(canvas.dataset.title!) });
+		if (!canvas.width || !canvas.height) {
+			notification.info({ message: MESSAGES.empty(canvas.dataset.title!) });
 			return;
 		}
 
-		setCanvasImage(algorithms.equalization(getCanvasImage(canvas), !!onlyValidPixels), canvas3);
+		setCanvasImage(algorithms.equalization(getCanvasImage(canvas), onlyValidPixels), canvas3);
 
 		forceUpdate();
 	};
@@ -643,9 +638,9 @@ export default ({
 								value={canvasNoiseRemovalType}
 								onChange={(e) => setCanvasNoiseRemovalType(e.target.value)}
 							>
-								<Radio.Button value={0}>Cruz</Radio.Button>
-								<Radio.Button value={1}>X</Radio.Button>
-								<Radio.Button value={2}>3x3</Radio.Button>
+								<Radio.Button value="cross">Cruz</Radio.Button>
+								<Radio.Button value="x">X</Radio.Button>
+								<Radio.Button value="3x3">3x3</Radio.Button>
 							</Radio.Group>
 						</Col>
 					</Row>
@@ -668,11 +663,11 @@ export default ({
 
 						<Col span={18}>
 							<SliderInput
-								value={canvas1Amount}
+								value={canvasSumSub1Amount}
 								min={0}
 								max={100}
 								suffix="%"
-								onChange={setCanvas1Amount}
+								onChange={setCanvasSumSub1Amount}
 								sliderProps={{
 									marks: {
 										0: '0%',
@@ -695,11 +690,11 @@ export default ({
 
 						<Col span={18}>
 							<SliderInput
-								value={canvas2Amount}
+								value={canvasSumSub2Amount}
 								min={0}
 								max={100}
 								suffix="%"
-								onChange={setCanvas2Amount}
+								onChange={setCanvasSumSub2Amount}
 								sliderProps={{
 									marks: {
 										0: '0%',

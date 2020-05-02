@@ -8,22 +8,22 @@ export default class RegionSelection {
 	readonly imageData: ImageData;
 
 	/**
-	 * The starting x point.
+	 * The starting point x-coordinate.
 	 */
 	readonly startX: number;
 
 	/**
-	 * The starting y point.
+	 * The starting point y-coordinate.
 	 */
 	readonly startY: number;
 
 	/**
-	 * The ending x point.
+	 * The ending point x-coordinate.
 	 */
 	endX: number;
 
 	/**
-	 * The ending y point.
+	 * The ending point y-coordinate.
 	 */
 	endY: number;
 
@@ -36,10 +36,10 @@ export default class RegionSelection {
 	}
 
 	/**
-	 * Updates the ending x and y points.
+	 * Updates the ending point x-coordinate and y-coordinate.
 	 *
-	 * @param endX The ending x point
-	 * @param endY The ending y point
+	 * @param endX The ending point x-coordinate.
+	 * @param endY The ending point y-coordinate.
 	 */
 	updateEndPoint(endX: number, endY: number) {
 		this.endX = endX;

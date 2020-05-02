@@ -94,16 +94,19 @@ export default () => {
 		if (regionSelection) {
 			regionSelection.updateEndPoint(offsetX, offsetY);
 
+			const { imageData, startX, startY, endX, endY } = regionSelection;
+
+			// undo the last drawn border by recovering the original image
+			setCanvasImage(imageData, canvas);
+
 			const { borderMarking } = challengesOptions;
 
 			if (borderMarking.active) {
-				const { imageData, startX, startY, endX, endY } = regionSelection;
-
-				// undo last marked border using the original image data
-				setCanvasImage(imageData, canvas);
-
-				// mark the image with a green border and redraw the marked image into the canvas
-				setCanvasImage(algorithms.drawBorder(imageData, startX, startY, endX, endY, borderMarking.color), canvas);
+				// draw a border in the selected area
+				setCanvasImage(
+					algorithms.drawBorder(imageData, startX, startY, endX, endY, { borderColor: borderMarking.color }),
+					canvas
+				);
 			}
 		}
 	};
@@ -128,6 +131,11 @@ export default () => {
 		}
 
 		if (regionSelection) {
+			if (!challengesOptions.borderMarking.active) {
+				// recover the original image
+				setCanvasImage(regionSelection.imageData, canvas);
+			}
+
 			regionSelection = undefined;
 		}
 	};
@@ -142,13 +150,18 @@ export default () => {
 		updatePixelShowcase();
 
 		if (regionSelection) {
+			if (!challengesOptions.borderMarking.active) {
+				// recover the original image
+				setCanvasImage(regionSelection.imageData, canvas);
+			}
+
 			regionSelection = undefined;
 		}
 	};
 
-	const isCanvas1Empty = !(canvas1Ref.current?.width && canvas1Ref.current?.height);
-	const isCanvas2Empty = !(canvas2Ref.current?.width && canvas2Ref.current?.height);
-	const isCanvas3Empty = !(canvas3Ref.current?.width && canvas3Ref.current?.height);
+	const canvas1IsEmpty = !(canvas1Ref.current?.width && canvas1Ref.current?.height);
+	const canvas2IsEmpty = !(canvas2Ref.current?.width && canvas2Ref.current?.height);
+	const canvas3IsEmpty = !(canvas3Ref.current?.width && canvas3Ref.current?.height);
 
 	return (
 		<Layout style={{ overflow: 'hidden' }}>
@@ -257,7 +270,7 @@ export default () => {
 						className="canvas-wrapper"
 						span={
 							// eslint-disable-next-line unicorn/no-nested-ternary
-							isCanvas1Empty ? 0 : isCanvas2Empty && isCanvas3Empty ? '' : isCanvas2Empty || isCanvas3Empty ? 12 : 8
+							canvas1IsEmpty ? 0 : canvas2IsEmpty && canvas3IsEmpty ? '' : canvas2IsEmpty || canvas3IsEmpty ? 12 : 8
 						}
 					>
 						{/* eslint-disable-next-line jsx-a11y/mouse-events-have-key-events */}
@@ -278,7 +291,7 @@ export default () => {
 						className="canvas-wrapper"
 						span={
 							// eslint-disable-next-line unicorn/no-nested-ternary
-							isCanvas2Empty ? 0 : isCanvas1Empty && isCanvas3Empty ? '' : isCanvas1Empty || isCanvas3Empty ? 12 : 8
+							canvas2IsEmpty ? 0 : canvas1IsEmpty && canvas3IsEmpty ? '' : canvas1IsEmpty || canvas3IsEmpty ? 12 : 8
 						}
 					>
 						{/* eslint-disable-next-line jsx-a11y/mouse-events-have-key-events */}
@@ -298,7 +311,7 @@ export default () => {
 						className="canvas-wrapper"
 						span={
 							// eslint-disable-next-line unicorn/no-nested-ternary
-							isCanvas3Empty ? 0 : isCanvas1Empty && isCanvas2Empty ? '' : isCanvas1Empty || isCanvas2Empty ? 12 : 8
+							canvas3IsEmpty ? 0 : canvas1IsEmpty && canvas2IsEmpty ? '' : canvas1IsEmpty || canvas2IsEmpty ? 12 : 8
 						}
 					>
 						{/* eslint-disable-next-line jsx-a11y/mouse-events-have-key-events */}

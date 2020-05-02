@@ -2,7 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { Typography, notification } from 'antd';
 import { Bar, BarChart, CartesianGrid, Tooltip, TooltipProps, XAxis, YAxis } from 'recharts';
 
-import { MESSAGES, getCanvasImage } from 'app/logic/helpers';
+import { MESSAGES } from 'app/logic/constants';
+import { getCanvasImage } from 'app/logic/helpers';
 import * as algorithms from 'app/logic/algorithms';
 
 const { Text } = Typography;
