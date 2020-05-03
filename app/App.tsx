@@ -107,6 +107,9 @@ export default () => {
 					algorithms.drawBorder(imageData, startX, startY, endX, endY, { borderColor: borderMarking.color }),
 					canvas
 				);
+			} else {
+				// draw a selection border in the selected area
+				setCanvasImage(algorithms.drawBorder(imageData, startX, startY, endX, endY), canvas);
 			}
 		}
 	};

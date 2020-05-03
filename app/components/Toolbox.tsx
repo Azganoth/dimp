@@ -12,7 +12,7 @@ import { getCanvasImage, setCanvasImage } from 'app/logic/helpers';
 import { ChallengesOptions } from 'app/logic/types';
 import * as algorithms from 'app/logic/algorithms';
 
-const { Text } = Typography;
+const { Text, Title } = Typography;
 const { TabPane } = Tabs;
 
 type Props = {
@@ -38,9 +38,11 @@ export default ({
 	challengesOptions,
 	updateChallengesOptions,
 }: Props) => {
-	const [targetCanvas, setTargetCanvas] = useState(canvas1Ref);
+	const [targetCanvasRef, setTargetCanvasRef] = useState(canvas1Ref);
 
-	const load = async ({ current: canvas }: React.MutableRefObject<HTMLCanvasElement | null>) => {
+	const load = async () => {
+		const { current: canvas } = targetCanvasRef;
+
 		if (!canvas) {
 			notification.error({ message: MESSAGES.INTERNAL_ERROR });
 			return;
@@ -92,7 +94,9 @@ export default ({
 		image.src = filePath;
 	};
 
-	const unload = async ({ current: canvas }: React.MutableRefObject<HTMLCanvasElement | null>) => {
+	const unload = async () => {
+		const { current: canvas } = targetCanvasRef;
+
 		if (!canvas) {
 			notification.error({ message: MESSAGES.INTERNAL_ERROR });
 			return;
@@ -113,7 +117,9 @@ export default ({
 		notification.success({ message: `Imagem retirada do ${canvas.dataset.title!}.` });
 	};
 
-	const download = async ({ current: canvas }: React.MutableRefObject<HTMLCanvasElement | null>) => {
+	const download = async () => {
+		const { current: canvas } = targetCanvasRef;
+
 		if (!canvas) {
 			notification.error({ message: MESSAGES.INTERNAL_ERROR });
 			return;
@@ -167,7 +173,7 @@ export default ({
 	// NEGATIVE
 
 	const canvasNegative = () => {
-		const { current: canvas } = targetCanvas;
+		const { current: canvas } = targetCanvasRef;
 		const { current: canvas3 } = canvas3Ref;
 
 		if (!canvas || !canvas3) {
@@ -190,7 +196,7 @@ export default ({
 	const [canvasThreshValue, setCanvasThreshValue] = useState(127);
 
 	const canvasThresh = () => {
-		const { current: canvas } = targetCanvas;
+		const { current: canvas } = targetCanvasRef;
 		const { current: canvas3 } = canvas3Ref;
 
 		if (!canvas || !canvas3) {
@@ -215,7 +221,7 @@ export default ({
 	const [canvasGreyscaleBWeight, setCanvasGreyscaleBWeight] = useState(100);
 
 	const canvasGreyscale = (weighted?: boolean) => {
-		const { current: canvas } = targetCanvas;
+		const { current: canvas } = targetCanvasRef;
 		const { current: canvas3 } = canvas3Ref;
 
 		if (!canvas || !canvas3) {
@@ -244,7 +250,7 @@ export default ({
 	const [canvasNoiseRemovalType, setCanvasNoiseRemovalType] = useState<'cross' | 'x' | '3x3'>('cross');
 
 	const canvasNoiseRemoval = () => {
-		const { current: canvas } = targetCanvas;
+		const { current: canvas } = targetCanvasRef;
 		const { current: canvas3 } = canvas3Ref;
 
 		if (!canvas || !canvas3) {
@@ -326,7 +332,7 @@ export default ({
 	// EQUALIZATION
 
 	const canvasEqualization = (onlyValidPixels = false) => {
-		const { current: canvas } = targetCanvas;
+		const { current: canvas } = targetCanvasRef;
 		const { current: canvas3 } = canvas3Ref;
 
 		if (!canvas || !canvas3) {
@@ -346,11 +352,66 @@ export default ({
 
 	return (
 		<Drawer
-			title="Caixa de ferramentas"
 			visible={visible}
 			onClose={onClose}
 			placement="left"
 			width={600}
+			title={
+				<Row gutter={18} justify="center" align="middle">
+					<Col>
+						<Title level={4} style={{ marginBottom: 0 }}>
+							Caixa de ferramentas
+						</Title>
+					</Col>
+
+					<Divider dashed style={{ marginTop: '4px', marginBottom: '12px' }} />
+
+					<Col span={8}>
+						<Tooltip placement="bottomLeft" title="Carregar uma imagem ao canvas.">
+							<Button size="large" icon={<UploadOutlined />} onClick={() => load()} style={{ width: '100%' }} />
+						</Tooltip>
+					</Col>
+
+					<Col span={8}>
+						<Tooltip placement="bottom" title="Retirar a imagem do canvas.">
+							<Button
+								danger
+								type="dashed"
+								size="large"
+								icon={<CloseOutlined />}
+								onClick={() => unload()}
+								style={{ width: '100%' }}
+							/>
+						</Tooltip>
+					</Col>
+
+					<Col span={8}>
+						<Tooltip placement="bottomRight" title="Salvar a imagem do canvas.">
+							<Button
+								type="dashed"
+								size="large"
+								icon={<DownloadOutlined />}
+								onClick={() => download()}
+								style={{ width: '100%' }}
+							/>
+						</Tooltip>
+					</Col>
+
+					<Divider dashed>
+						<Text strong>Canvas alvo</Text>
+					</Divider>
+
+					<Col>
+						<Radio.Group size="large" value={targetCanvasRef} onChange={(e) => setTargetCanvasRef(e.target.value)}>
+							<Radio.Button value={canvas1Ref}>Canvas 1</Radio.Button>
+							<Radio.Button value={canvas2Ref}>Canvas 2</Radio.Button>
+							<Tooltip placement="bottom" title="Este canvas guardará o resultado de qualquer rotina.">
+								<Radio.Button value={canvas3Ref}>Canvas 3</Radio.Button>
+							</Tooltip>
+						</Radio.Group>
+					</Col>
+				</Row>
+			}
 			footer={
 				<Row justify="space-between" align="middle">
 					<Col flex="auto" offset={2} style={{ fontFamily: 'sans-serif', textAlign: 'center' }}>
@@ -371,109 +432,6 @@ export default ({
 				</Row>
 			}
 		>
-			<Row gutter={[8, 8]} align="middle">
-				<Col span={12} style={{ textAlign: 'center' }}>
-					<Text strong>Canvas 1</Text>
-				</Col>
-
-				<Col span={12} style={{ textAlign: 'center' }}>
-					<Text strong>Canvas 2</Text>
-				</Col>
-
-				<Col span={4}>
-					<Tooltip placement="topLeft" title="Carregar uma imagem ao canvas.">
-						<Button size="large" icon={<UploadOutlined />} onClick={() => load(canvas1Ref)} style={{ width: '100%' }} />
-					</Tooltip>
-				</Col>
-
-				<Col span={4}>
-					<Tooltip title="Salvar a imagem do canvas.">
-						<Button
-							type="dashed"
-							size="large"
-							icon={<DownloadOutlined />}
-							onClick={() => download(canvas1Ref)}
-							style={{ width: '100%' }}
-						/>
-					</Tooltip>
-				</Col>
-
-				<Col span={4}>
-					<Tooltip placement="topRight" title="Retirar a imagem do canvas.">
-						<Button
-							danger
-							type="dashed"
-							size="large"
-							icon={<CloseOutlined />}
-							onClick={() => unload(canvas1Ref)}
-							style={{ width: '100%' }}
-						/>
-					</Tooltip>
-				</Col>
-
-				<Col span={4}>
-					<Tooltip placement="topLeft" title="Carregar uma imagem ao canvas.">
-						<Button size="large" icon={<UploadOutlined />} onClick={() => load(canvas2Ref)} style={{ width: '100%' }} />
-					</Tooltip>
-				</Col>
-
-				<Col span={4}>
-					<Tooltip title="Salvar a imagem do canvas.">
-						<Button
-							type="dashed"
-							size="large"
-							icon={<DownloadOutlined />}
-							onClick={() => download(canvas2Ref)}
-							style={{ width: '100%' }}
-						/>
-					</Tooltip>
-				</Col>
-
-				<Col span={4}>
-					<Tooltip placement="topRight" title="Retirar a imagem do canvas.">
-						<Button
-							danger
-							type="dashed"
-							size="large"
-							icon={<CloseOutlined />}
-							onClick={() => unload(canvas2Ref)}
-							style={{ width: '100%' }}
-						/>
-					</Tooltip>
-				</Col>
-
-				<Col span={8} style={{ textAlign: 'center' }}>
-					<Text strong>Canvas 3 (resultado)</Text>
-				</Col>
-
-				<Col span={8}>
-					<Tooltip placement="bottom" title="Salvar a imagem do canvas.">
-						<Button
-							type="dashed"
-							size="large"
-							icon={<DownloadOutlined />}
-							onClick={() => download(canvas3Ref)}
-							style={{ width: '100%' }}
-						/>
-					</Tooltip>
-				</Col>
-
-				<Col span={8}>
-					<Tooltip placement="bottom" title="Retirar a imagem do canvas.">
-						<Button
-							danger
-							type="dashed"
-							size="large"
-							icon={<CloseOutlined />}
-							onClick={() => unload(canvas3Ref)}
-							style={{ width: '100%' }}
-						/>
-					</Tooltip>
-				</Col>
-			</Row>
-
-			<Divider />
-
 			<Tabs defaultActiveKey="1">
 				<TabPane tab="Negativa" key="1">
 					<Row justify="center">
@@ -771,18 +729,6 @@ export default ({
 					</Row>
 				</TabPane>
 			</Tabs>
-
-			<Divider dashed>Canvas alvo</Divider>
-
-			<Row justify="center" align="middle">
-				<Col>
-					<Radio.Group value={targetCanvas} onChange={(e) => setTargetCanvas(e.target.value)}>
-						<Radio.Button value={canvas1Ref}>Canvas 1</Radio.Button>
-						<Radio.Button value={canvas2Ref}>Canvas 2</Radio.Button>
-						<Radio.Button value={canvas3Ref}>Canvas 3 (resultado)</Radio.Button>
-					</Radio.Group>
-				</Col>
-			</Row>
 		</Drawer>
 	);
 };
