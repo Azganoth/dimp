@@ -4,7 +4,7 @@ import { Bar, BarChart, CartesianGrid, Tooltip, TooltipProps, XAxis, YAxis } fro
 
 import { MESSAGES } from 'app/logic/constants';
 import { getCanvasImage } from 'app/logic/helpers';
-import * as algorithms from 'app/logic/algorithms';
+import { HistogramValue, histogram } from 'app/logic/algorithms';
 
 const { Text } = Typography;
 
@@ -45,7 +45,7 @@ type Props = {
 };
 
 export default ({ canvasRef }: Props) => {
-	const [histogramData, setHistogramData] = useState<algorithms.HistogramValue[]>([]);
+	const [histogramData, setHistogramData] = useState<HistogramValue[]>([]);
 
 	useEffect(() => {
 		const { current: canvas } = canvasRef;
@@ -56,18 +56,24 @@ export default ({ canvasRef }: Props) => {
 		}
 
 		if (canvas.width && canvas.height) {
-			setHistogramData(algorithms.histogram(getCanvasImage(canvas)));
+			setHistogramData(histogram(getCanvasImage(canvas)));
 		}
 	}, [canvasRef]);
 
 	return (
-		<BarChart width={552} height={200} data={histogramData} barCategoryGap={0} barGap={0}>
+		<BarChart width={552} height={190} data={histogramData} barCategoryGap={0} barGap={0}>
 			<CartesianGrid strokeDasharray="3 3" />
+
 			<XAxis dataKey={(item) => histogramData.indexOf(item)} ticks={[0, 33, 63, 95, 127, 159, 191, 223, 255]} />
+
 			<YAxis tickFormatter={(value) => (value as number).toLocaleString()} />
+
 			<Tooltip content={<CustomTooltip />} />
+
 			<Bar name="red" dataKey="r" stackId="count" fill="#ff5c57" />
+
 			<Bar name="green" dataKey="g" stackId="count" fill="#5af78e" />
+
 			<Bar name="blue" dataKey="b" stackId="count" fill="#57c7ff" />
 		</BarChart>
 	);

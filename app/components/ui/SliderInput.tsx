@@ -1,17 +1,20 @@
 import React from 'react';
-import { Col, InputNumber, Row, Slider } from 'antd';
+import { Col, Row, Slider } from 'antd';
 import { InputNumberProps } from 'antd/lib/input-number';
 import { SliderProps } from 'antd/lib/slider';
 
+import InputNumberFormatted from 'app/components/ui/InputNumberFormatted';
+
 type Props = {
-	sliderProps: SliderProps;
-	inputProps: InputNumberProps;
+	sliderProps: Omit<SliderProps, 'value' | 'onChange' | 'min' | 'max'>;
+	inputProps: Omit<InputNumberProps, 'value' | 'onChange' | 'min' | 'max' | 'formatter' | 'parser'>;
 	value: number;
 	onChange: (value: number) => void;
 	min?: number;
 	max?: number;
-	prefix?: string;
-	suffix?: string;
+	valuePrefix?: string;
+	valueSuffix?: string;
+	inputSpan?: number;
 };
 
 export default ({
@@ -21,46 +24,36 @@ export default ({
 	onChange,
 	min = -Infinity,
 	max = Infinity,
-	prefix = '',
-	suffix = '',
-}: Props) => {
-	const formatter = (val: string | number | undefined) => {
-		return `${prefix}${val ?? min}${suffix}`;
-	};
+	valuePrefix = '',
+	valueSuffix = '',
+	inputSpan = 7,
+}: Props) => (
+	<Row gutter={24} align="middle">
+		<Col flex="auto">
+			<Slider
+				value={value}
+				min={min}
+				max={max}
+				onChange={(val) => {
+					if (typeof val === 'number') {
+						onChange(val);
+					}
+				}}
+				tooltipVisible={false}
+				{...sliderProps}
+			/>
+		</Col>
 
-	const parser = (val: string | undefined) => {
-		const valNumber = Number.parseInt(String(val?.replace(prefix, '').replace(suffix, '')), 10);
-		return Math.min(Math.max(Number.isNaN(valNumber) ? min : valNumber, min), max);
-	};
-
-	return (
-		<Row align="middle">
-			<Col span={18}>
-				<Slider
-					value={value}
-					min={min}
-					max={max}
-					onChange={(val) => {
-						if (typeof val === 'number') {
-							onChange(val);
-						}
-					}}
-					tooltipVisible={false}
-					{...sliderProps}
-				/>
-			</Col>
-			<Col span={4} offset={2}>
-				<InputNumber
-					value={value}
-					min={min}
-					max={max}
-					formatter={formatter}
-					parser={parser}
-					onChange={(val) => onChange(val ?? min)}
-					style={{ width: '100%' }}
-					{...inputProps}
-				/>
-			</Col>
-		</Row>
-	);
-};
+		<Col span={inputSpan}>
+			<InputNumberFormatted
+				value={value}
+				min={min}
+				max={max}
+				valuePrefix={valuePrefix}
+				valueSuffix={valueSuffix}
+				onChange={onChange}
+				{...inputProps}
+			/>
+		</Col>
+	</Row>
+);

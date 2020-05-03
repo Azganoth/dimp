@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { Button, Col, Divider, Drawer, Radio, Row, Switch, Tabs, Tooltip, Typography, notification } from 'antd';
-import { CloseOutlined, DownloadOutlined, ExperimentOutlined, GithubOutlined, UploadOutlined } from '@ant-design/icons';
+import { Button, Col, Divider, Layout, Radio, Row, Switch, Tabs, Tooltip, Typography, notification } from 'antd';
+import { CloseOutlined, DownloadOutlined, FireFilled, GithubOutlined, UploadOutlined } from '@ant-design/icons';
 import { remote } from 'electron';
 import path from 'path';
 import { promises as fs } from 'fs';
@@ -12,12 +12,11 @@ import { getCanvasImage, setCanvasImage } from 'app/logic/helpers';
 import { ChallengesOptions } from 'app/logic/types';
 import * as algorithms from 'app/logic/algorithms';
 
+const { Header, Content, Footer } = Layout;
 const { Text, Title } = Typography;
 const { TabPane } = Tabs;
 
 type Props = {
-	visible: boolean;
-	onClose: () => void;
 	forceUpdate: React.DispatchWithoutAction;
 	canvas1Ref: React.MutableRefObject<HTMLCanvasElement | null>;
 	canvas2Ref: React.MutableRefObject<HTMLCanvasElement | null>;
@@ -29,8 +28,6 @@ type Props = {
 };
 
 export default ({
-	visible,
-	onClose,
 	forceUpdate,
 	canvas1Ref,
 	canvas2Ref,
@@ -351,29 +348,25 @@ export default ({
 	};
 
 	return (
-		<Drawer
-			visible={visible}
-			onClose={onClose}
-			placement="left"
-			width={600}
-			title={
-				<Row gutter={18} justify="center" align="middle">
-					<Col>
-						<Title level={4} style={{ marginBottom: 0 }}>
-							Caixa de ferramentas
-						</Title>
-					</Col>
+		<Layout style={{ height: '100%', background: 'white' }}>
+			<Header style={{ padding: '1rem' }}>
+				<Row justify="center" align="middle">
+					<Title level={4} style={{ marginBottom: 0 }}>
+						Caixa de ferramentas
+					</Title>
+				</Row>
+			</Header>
 
-					<Divider dashed style={{ marginTop: '4px', marginBottom: '12px' }} />
-
+			<Content style={{ padding: '2rem 1rem 1rem' }}>
+				<Row gutter={12}>
 					<Col span={8}>
-						<Tooltip placement="bottomLeft" title="Carregar uma imagem ao canvas.">
+						<Tooltip placement="topLeft" mouseEnterDelay={1} title="Carregar uma imagem ao canvas alvo.">
 							<Button size="large" icon={<UploadOutlined />} onClick={() => load()} style={{ width: '100%' }} />
 						</Tooltip>
 					</Col>
 
 					<Col span={8}>
-						<Tooltip placement="bottom" title="Retirar a imagem do canvas.">
+						<Tooltip placement="top" mouseEnterDelay={1} title="Retirar a imagem do canvas alvo.">
 							<Button
 								danger
 								type="dashed"
@@ -386,7 +379,7 @@ export default ({
 					</Col>
 
 					<Col span={8}>
-						<Tooltip placement="bottomRight" title="Salvar a imagem do canvas.">
+						<Tooltip placement="topRight" mouseEnterDelay={1} title="Salvar a imagem do canvas alvo.">
 							<Button
 								type="dashed"
 								size="large"
@@ -396,30 +389,328 @@ export default ({
 							/>
 						</Tooltip>
 					</Col>
+				</Row>
 
-					<Divider dashed>
-						<Text strong>Canvas alvo</Text>
-					</Divider>
+				<Divider dashed>
+					<Text strong>Canvas alvo</Text>
+				</Divider>
 
+				<Row gutter={[0, 16]} justify="center">
 					<Col>
 						<Radio.Group size="large" value={targetCanvasRef} onChange={(e) => setTargetCanvasRef(e.target.value)}>
 							<Radio.Button value={canvas1Ref}>Canvas 1</Radio.Button>
 							<Radio.Button value={canvas2Ref}>Canvas 2</Radio.Button>
-							<Tooltip placement="bottom" title="Este canvas guardará o resultado de qualquer rotina.">
-								<Radio.Button value={canvas3Ref}>Canvas 3</Radio.Button>
-							</Tooltip>
+							<Radio.Button value={canvas3Ref}>Canvas 3</Radio.Button>
 						</Radio.Group>
 					</Col>
 				</Row>
-			}
-			footer={
-				<Row justify="space-between" align="middle">
-					<Col flex="auto" offset={2} style={{ fontFamily: 'sans-serif', textAlign: 'center' }}>
+
+				<Tabs defaultActiveKey="1">
+					<TabPane tab="Negativa" key="1">
+						<Row justify="center">
+							<Col>
+								<Button type="primary" size="large" icon={<FireFilled />} onClick={() => canvasNegative()}>
+									Aplicar negativa
+								</Button>
+							</Col>
+						</Row>
+					</TabPane>
+
+					<TabPane tab="Limiarização" key="2">
+						<Row gutter={[0, 16]}>
+							<Col span={24}>
+								<SliderInput
+									value={canvasThreshValue}
+									onChange={setCanvasThreshValue}
+									min={0}
+									max={255}
+									inputSpan={6}
+									sliderProps={{
+										marks: {
+											0: '0',
+											63: '63',
+											127: '127',
+											191: '191',
+											255: '255',
+										},
+									}}
+									inputProps={{
+										size: 'large',
+									}}
+								/>
+							</Col>
+						</Row>
+
+						<Row justify="center">
+							<Col>
+								<Button type="primary" size="large" icon={<FireFilled />} onClick={() => canvasThresh()}>
+									Aplicar limiarização
+								</Button>
+							</Col>
+						</Row>
+					</TabPane>
+
+					<TabPane tab="Tons de cinza" key="3">
+						<Row justify="center">
+							<Col>
+								<Button type="primary" size="large" icon={<FireFilled />} onClick={() => canvasGreyscale()}>
+									Aplicar média aritmética
+								</Button>
+							</Col>
+						</Row>
+
+						<Divider dashed />
+
+						<Row gutter={[16, 16]} align="middle">
+							<Col span={2}>
+								<Text strong style={{ fontSize: '1.25rem' }}>
+									R
+								</Text>
+							</Col>
+
+							<Col span={22}>
+								<SliderInput
+									value={canvasGreyscaleRWeight}
+									onChange={setCanvasGreyscaleRWeight}
+									min={0}
+									max={100}
+									valueSuffix="%"
+									sliderProps={{
+										marks: {
+											0: '0%',
+											25: '25%',
+											50: '50%',
+											75: '75%',
+											100: '100%',
+										},
+									}}
+									inputProps={{
+										size: 'large',
+									}}
+								/>
+							</Col>
+
+							<Col span={2}>
+								<Text strong style={{ fontSize: '1.25rem' }}>
+									G
+								</Text>
+							</Col>
+
+							<Col span={22}>
+								<SliderInput
+									value={canvasGreyscaleGWeight}
+									onChange={setCanvasGreyscaleGWeight}
+									min={0}
+									max={100}
+									valueSuffix="%"
+									sliderProps={{
+										marks: {
+											0: '0%',
+											25: '25%',
+											50: '50%',
+											75: '75%',
+											100: '100%',
+										},
+									}}
+									inputProps={{
+										size: 'large',
+									}}
+								/>
+							</Col>
+
+							<Col span={2}>
+								<Text strong style={{ fontSize: '1.25rem' }}>
+									B
+								</Text>
+							</Col>
+
+							<Col span={22}>
+								<SliderInput
+									value={canvasGreyscaleBWeight}
+									onChange={setCanvasGreyscaleBWeight}
+									min={0}
+									max={100}
+									valueSuffix="%"
+									sliderProps={{
+										marks: {
+											0: '0%',
+											25: '25%',
+											50: '50%',
+											75: '75%',
+											100: '100%',
+										},
+									}}
+									inputProps={{
+										size: 'large',
+									}}
+								/>
+							</Col>
+						</Row>
+
+						<Row justify="center">
+							<Col>
+								<Button type="primary" size="large" icon={<FireFilled />} onClick={() => canvasGreyscale(true)}>
+									Aplicar média ponderada
+								</Button>
+							</Col>
+						</Row>
+					</TabPane>
+
+					<TabPane tab="Ruídos" key="4">
+						<Row gutter={[0, 16]} justify="center" align="middle">
+							<Col>
+								<Text strong>Método</Text>
+							</Col>
+						</Row>
+
+						<Row gutter={[0, 16]} justify="center">
+							<Col>
+								<Radio.Group
+									buttonStyle="solid"
+									size="large"
+									value={canvasNoiseRemovalType}
+									onChange={(e) => setCanvasNoiseRemovalType(e.target.value)}
+								>
+									<Radio.Button value="cross">Cruz</Radio.Button>
+									<Radio.Button value="x">X</Radio.Button>
+									<Radio.Button value="3x3">3x3</Radio.Button>
+								</Radio.Group>
+							</Col>
+						</Row>
+
+						<Row justify="center">
+							<Col>
+								<Tooltip placement="bottom" title="O applicativo poderá congelar até o término desta rotina.">
+									<Button type="primary" size="large" icon={<FireFilled />} onClick={() => canvasNoiseRemoval()}>
+										Eliminar ruídos
+									</Button>
+								</Tooltip>
+							</Col>
+						</Row>
+					</TabPane>
+
+					<TabPane tab="Adição / Subtração" key="5">
+						<Row gutter={[16, 16]} align="middle">
+							<Col span={5}>
+								<Text strong>Canvas 1</Text>
+							</Col>
+
+							<Col span={19}>
+								<SliderInput
+									value={canvasSumSub1Amount}
+									onChange={setCanvasSumSub1Amount}
+									min={0}
+									max={100}
+									valueSuffix="%"
+									inputSpan={8}
+									sliderProps={{
+										marks: {
+											0: '0%',
+											50: '50%',
+											100: '100%',
+										},
+									}}
+									inputProps={{
+										size: 'large',
+									}}
+								/>
+							</Col>
+
+							<Col span={5}>
+								<Text strong>Canvas 2</Text>
+							</Col>
+
+							<Col span={19}>
+								<SliderInput
+									value={canvasSumSub2Amount}
+									onChange={setCanvasSumSub2Amount}
+									min={0}
+									max={100}
+									valueSuffix="%"
+									inputSpan={8}
+									sliderProps={{
+										marks: {
+											0: '0%',
+											50: '50%',
+											100: '100%',
+										},
+									}}
+									inputProps={{
+										size: 'large',
+									}}
+								/>
+							</Col>
+						</Row>
+
+						<Row gutter={[0, 16]} justify="center">
+							<Col>
+								<Button type="primary" size="large" icon={<FireFilled />} onClick={() => canvasSum()}>
+									Aplicar adição
+								</Button>
+							</Col>
+						</Row>
+
+						<Row justify="center">
+							<Col>
+								<Button type="primary" size="large" icon={<FireFilled />} onClick={() => canvasSub()}>
+									Aplicar subtração
+								</Button>
+							</Col>
+						</Row>
+					</TabPane>
+
+					<TabPane tab="Equalização de histograma" key="6">
+						<Row gutter={[0, 16]} justify="center">
+							<Col>
+								<Button type="primary" size="large" icon={<FireFilled />} onClick={() => canvasEqualization()}>
+									Equalizar
+								</Button>
+							</Col>
+						</Row>
+
+						<Row justify="center">
+							<Col>
+								<Button type="primary" size="large" icon={<FireFilled />} onClick={() => canvasEqualization(true)}>
+									Equalizar apenas pixels válidos
+								</Button>
+							</Col>
+						</Row>
+					</TabPane>
+
+					<TabPane tab="Desafios" key="7">
+						<Row gutter={[16, 16]} align="middle">
+							<Col>
+								<Switch
+									checked={challengesOptions.borderMarking.active}
+									onChange={(value) => updateChallengesOptions({ borderMarking: { active: value } })}
+								/>
+							</Col>
+
+							<Col flex="auto">
+								<Text>Marcação</Text>
+							</Col>
+
+							<Col>
+								<ColorPicker
+									value={challengesOptions.borderMarking.color}
+									onChange={(value) => updateChallengesOptions({ borderMarking: { color: value } })}
+									placement="bottomRight"
+									colorPickerProps={{ disableAlpha: true }}
+								/>
+							</Col>
+						</Row>
+					</TabPane>
+				</Tabs>
+			</Content>
+
+			<Footer style={{ padding: '1rem' }}>
+				<Row justify="center" align="middle">
+					<Col style={{ textAlign: 'center' }}>
 						<Text strong>Ademir J. Ferreira Júnior &lt;ademirj.ferreirajunior@gmail.com&gt;</Text>
 					</Col>
 
-					<Col span={2}>
-						<Tooltip placement="topRight" title="Abrir página do repositório github no navegador.">
+					<Col>
+						<Tooltip placement="topLeft" title="Abrir página do repositório github no navegador.">
 							<Button
 								type="link"
 								size="large"
@@ -430,305 +721,7 @@ export default ({
 						</Tooltip>
 					</Col>
 				</Row>
-			}
-		>
-			<Tabs defaultActiveKey="1">
-				<TabPane tab="Negativa" key="1">
-					<Row justify="center">
-						<Col>
-							<Button type="primary" size="large" icon={<ExperimentOutlined />} onClick={() => canvasNegative()}>
-								Aplicar negativa
-							</Button>
-						</Col>
-					</Row>
-				</TabPane>
-				<TabPane tab="Limiarização" key="2">
-					<Row gutter={[0, 32]} justify="center">
-						<Col span={20}>
-							<SliderInput
-								value={canvasThreshValue}
-								min={0}
-								max={255}
-								onChange={setCanvasThreshValue}
-								sliderProps={{
-									marks: {
-										0: '0',
-										63: '63',
-										127: '127',
-										191: '191',
-										255: '255',
-									},
-								}}
-								inputProps={{
-									size: 'large',
-								}}
-							/>
-						</Col>
-					</Row>
-
-					<Row justify="center">
-						<Col>
-							<Button type="primary" size="large" icon={<ExperimentOutlined />} onClick={() => canvasThresh()}>
-								Aplicar limiarização
-							</Button>
-						</Col>
-					</Row>
-				</TabPane>
-				<TabPane tab="Tons de cinza" key="3">
-					<Row justify="center">
-						<Col>
-							<Button type="primary" size="large" icon={<ExperimentOutlined />} onClick={() => canvasGreyscale()}>
-								Aplicar média aritmética
-							</Button>
-						</Col>
-					</Row>
-
-					<Divider dashed />
-
-					<Row gutter={[0, 32]} justify="center" align="middle">
-						<Col span={2}>
-							<Text strong style={{ fontSize: '1.25rem' }}>
-								R
-							</Text>
-						</Col>
-
-						<Col span={22}>
-							<SliderInput
-								value={canvasGreyscaleRWeight}
-								min={0}
-								max={100}
-								suffix="%"
-								onChange={setCanvasGreyscaleRWeight}
-								sliderProps={{
-									marks: {
-										0: '0%',
-										25: '25%',
-										50: '50%',
-										75: '75%',
-										100: '100%',
-									},
-									tooltipPlacement: 'left',
-								}}
-								inputProps={{
-									size: 'large',
-								}}
-							/>
-						</Col>
-
-						<Col span={2}>
-							<Text strong style={{ fontSize: '1.25rem' }}>
-								G
-							</Text>
-						</Col>
-
-						<Col span={22}>
-							<SliderInput
-								value={canvasGreyscaleGWeight}
-								min={0}
-								max={100}
-								suffix="%"
-								onChange={setCanvasGreyscaleGWeight}
-								sliderProps={{
-									marks: {
-										0: '0%',
-										25: '25%',
-										50: '50%',
-										75: '75%',
-										100: '100%',
-									},
-									tooltipPlacement: 'left',
-								}}
-								inputProps={{
-									size: 'large',
-								}}
-							/>
-						</Col>
-
-						<Col span={2}>
-							<Text strong style={{ fontSize: '1.25rem' }}>
-								B
-							</Text>
-						</Col>
-						<Col span={22}>
-							<SliderInput
-								value={canvasGreyscaleBWeight}
-								min={0}
-								max={100}
-								suffix="%"
-								onChange={setCanvasGreyscaleBWeight}
-								sliderProps={{
-									marks: {
-										0: '0%',
-										25: '25%',
-										50: '50%',
-										75: '75%',
-										100: '100%',
-									},
-									tooltipPlacement: 'left',
-								}}
-								inputProps={{
-									size: 'large',
-								}}
-							/>
-						</Col>
-					</Row>
-
-					<Row justify="center">
-						<Col>
-							<Button type="primary" size="large" icon={<ExperimentOutlined />} onClick={() => canvasGreyscale(true)}>
-								Aplicar média ponderada
-							</Button>
-						</Col>
-					</Row>
-				</TabPane>
-				<TabPane tab="Ruídos" key="4">
-					<Row gutter={[0, 12]} justify="center" align="middle">
-						<Col>
-							<Text strong>Método</Text>
-						</Col>
-					</Row>
-
-					<Row gutter={[0, 24]} justify="center">
-						<Col>
-							<Radio.Group
-								buttonStyle="solid"
-								size="large"
-								value={canvasNoiseRemovalType}
-								onChange={(e) => setCanvasNoiseRemovalType(e.target.value)}
-							>
-								<Radio.Button value="cross">Cruz</Radio.Button>
-								<Radio.Button value="x">X</Radio.Button>
-								<Radio.Button value="3x3">3x3</Radio.Button>
-							</Radio.Group>
-						</Col>
-					</Row>
-
-					<Row justify="center">
-						<Col>
-							<Tooltip placement="bottom" title="O applicativo poderá congelar até o término desta rotina.">
-								<Button type="primary" size="large" icon={<ExperimentOutlined />} onClick={() => canvasNoiseRemoval()}>
-									Eliminar ruídos
-								</Button>
-							</Tooltip>
-						</Col>
-					</Row>
-				</TabPane>
-				<TabPane tab="Adição / Subtração" key="5">
-					<Row gutter={[0, 32]} justify="center" align="middle">
-						<Col span={4}>
-							<Text strong>Canvas 1</Text>
-						</Col>
-
-						<Col span={18}>
-							<SliderInput
-								value={canvasSumSub1Amount}
-								min={0}
-								max={100}
-								suffix="%"
-								onChange={setCanvasSumSub1Amount}
-								sliderProps={{
-									marks: {
-										0: '0%',
-										25: '25%',
-										50: '50%',
-										75: '75%',
-										100: '100%',
-									},
-									tooltipPlacement: 'left',
-								}}
-								inputProps={{
-									size: 'large',
-								}}
-							/>
-						</Col>
-
-						<Col span={4}>
-							<Text strong>Canvas 2</Text>
-						</Col>
-
-						<Col span={18}>
-							<SliderInput
-								value={canvasSumSub2Amount}
-								min={0}
-								max={100}
-								suffix="%"
-								onChange={setCanvasSumSub2Amount}
-								sliderProps={{
-									marks: {
-										0: '0%',
-										25: '25%',
-										50: '50%',
-										75: '75%',
-										100: '100%',
-									},
-									tooltipPlacement: 'left',
-								}}
-								inputProps={{
-									size: 'large',
-								}}
-							/>
-						</Col>
-					</Row>
-
-					<Row gutter={24} justify="center">
-						<Col>
-							<Button type="primary" size="large" icon={<ExperimentOutlined />} onClick={() => canvasSum()}>
-								Aplicar adição
-							</Button>
-						</Col>
-
-						<Col>
-							<Button type="primary" size="large" icon={<ExperimentOutlined />} onClick={() => canvasSub()}>
-								Aplicar subtração
-							</Button>
-						</Col>
-					</Row>
-				</TabPane>
-				<TabPane tab="Equalização de histograma" key="6">
-					<Row gutter={[0, 24]} justify="center">
-						<Col>
-							<Button type="primary" size="large" icon={<ExperimentOutlined />} onClick={() => canvasEqualization()}>
-								Equalizar
-							</Button>
-						</Col>
-					</Row>
-
-					<Row justify="center">
-						<Col>
-							<Button
-								type="primary"
-								size="large"
-								icon={<ExperimentOutlined />}
-								onClick={() => canvasEqualization(true)}
-							>
-								Equalizar apenas pixels válidos
-							</Button>
-						</Col>
-					</Row>
-				</TabPane>
-				<TabPane tab="Desafios" key="7">
-					<Row gutter={[24, 24]} align="middle">
-						<Col>
-							<Switch
-								checked={challengesOptions.borderMarking.active}
-								onChange={(value) => updateChallengesOptions({ borderMarking: { active: value } })}
-							/>
-						</Col>
-
-						<Col flex="auto">
-							<Text>Marcação</Text>
-						</Col>
-
-						<Col>
-							<ColorPicker
-								value={challengesOptions.borderMarking.color}
-								onChange={(value) => updateChallengesOptions({ borderMarking: { color: value } })}
-								colorPickerProps={{ disableAlpha: true }}
-							/>
-						</Col>
-					</Row>
-				</TabPane>
-			</Tabs>
-		</Drawer>
+			</Footer>
+		</Layout>
 	);
 };

@@ -1,18 +1,19 @@
 import React from 'react';
 import { Button, Popover } from 'antd';
+import { PopoverProps } from 'antd/lib/popover';
 import { ChromePicker, ChromePickerProps } from 'react-color';
 
 import { RGBAColor } from 'app/logic/types';
 
-type Props = {
-	colorPickerProps: ChromePickerProps;
+type Props = Omit<PopoverProps, 'content'> & {
 	value: RGBAColor;
 	onChange: (value: RGBAColor) => void;
 	width?: string;
 	height?: string;
+	colorPickerProps: Omit<ChromePickerProps, 'color' | 'onChange' | 'onChangeComplete'>;
 };
 
-export default ({ colorPickerProps, value, onChange, width = '64px', height = '32px' }: Props) => (
+export default ({ value, onChange, width = '48px', height = '24px', colorPickerProps, ...otherProps }: Props) => (
 	<Popover
 		placement="bottom"
 		trigger="click"
@@ -28,6 +29,7 @@ export default ({ colorPickerProps, value, onChange, width = '64px', height = '3
 				{...colorPickerProps}
 			/>
 		}
+		{...otherProps}
 	>
 		<Button style={{ padding: '4px', width, height }}>
 			<div

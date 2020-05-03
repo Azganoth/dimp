@@ -1,5 +1,5 @@
 import React, { useReducer, useRef, useState } from 'react';
-import { Button, Col, Layout, Modal, Row, Space, Tooltip, Typography, notification } from 'antd';
+import { Button, Col, Layout, Modal, Row, Tooltip, Typography, notification } from 'antd';
 import { BarChartOutlined, ToolOutlined } from '@ant-design/icons';
 
 import Toolbox from 'app/components/Toolbox';
@@ -9,7 +9,7 @@ import { getCanvasImage, setCanvasImage } from 'app/logic/helpers';
 import { ChallengesOptions, PixelShowcase } from 'app/logic/types';
 import * as algorithms from 'app/logic/algorithms';
 
-const { Header, Content } = Layout;
+const { Sider, Header, Content } = Layout;
 const { Text } = Typography;
 
 notification.config({
@@ -22,17 +22,9 @@ let regionSelection: RegionSelection | undefined;
 export default () => {
 	const [, forceUpdate] = useReducer((x) => x + 1, 0);
 
-	// TOOLBOX
+	const [siderCollapsed, setSiderCollapsed] = useState(false);
 
-	const [toolboxVisible, setToolboxVisible] = useState(false);
-
-	const openToolbox = () => {
-		setToolboxVisible(true);
-	};
-
-	const closeToolbox = () => {
-		setToolboxVisible(false);
-	};
+	const toggleSiderCollapse = () => setSiderCollapsed(!siderCollapsed);
 
 	// CHALLENGES
 
@@ -166,19 +158,25 @@ export default () => {
 	const canvas2IsEmpty = !(canvas2Ref.current?.width && canvas2Ref.current?.height);
 	const canvas3IsEmpty = !(canvas3Ref.current?.width && canvas3Ref.current?.height);
 
-	return (
-		<Layout style={{ overflow: 'hidden' }}>
-			<Toolbox
-				visible={toolboxVisible}
-				onClose={closeToolbox}
-				forceUpdate={forceUpdate}
-				canvas1Ref={canvas1Ref}
-				canvas2Ref={canvas2Ref}
-				canvas3Ref={canvas3Ref}
-				challengesOptions={challengesOptions}
-				updateChallengesOptions={updateChallengesOptions}
-			/>
+	const canvasWrapperColSpan = (
+		targetIsEmpty: boolean,
+		firstSiblingIsEmpty: boolean,
+		secondSiblingIsEmpty: boolean
+	) => {
+		if (targetIsEmpty) {
+			return 0;
+		}
+		if (firstSiblingIsEmpty && secondSiblingIsEmpty) {
+			return;
+		}
+		if (firstSiblingIsEmpty || secondSiblingIsEmpty) {
+			return 12;
+		}
+		return 8;
+	};
 
+	return (
+		<Layout style={{ height: '100vh' }}>
 			<Modal
 				centered
 				destroyOnClose
@@ -192,7 +190,7 @@ export default () => {
 			>
 				<Row justify="center" align="middle">
 					<Col>
-						<Text strong>Canvas 1</Text>
+						<Text strong>Canvas 1{canvas1IsEmpty && ' (vazio)'}</Text>
 					</Col>
 
 					<Col span={24}>
@@ -200,7 +198,7 @@ export default () => {
 					</Col>
 
 					<Col>
-						<Text strong>Canvas 2</Text>
+						<Text strong>Canvas 2{canvas2IsEmpty && ' (vazio)'}</Text>
 					</Col>
 
 					<Col span={24}>
@@ -208,7 +206,7 @@ export default () => {
 					</Col>
 
 					<Col>
-						<Text strong>Canvas 3 (resultado)</Text>
+						<Text strong>Canvas 3{canvas3IsEmpty && ' (vazio)'}</Text>
 					</Col>
 
 					<Col span={24}>
@@ -217,121 +215,151 @@ export default () => {
 				</Row>
 			</Modal>
 
-			<Header style={{ padding: '0 1rem', background: 'white' }}>
-				<Row justify="center" align="middle">
-					<Col>
-						<Tooltip placement="bottomRight" title="Abrir caixa de ferramentas.">
-							<Button
-								type="primary"
-								size="large"
-								icon={<ToolOutlined />}
-								onClick={openToolbox}
-								style={{ width: '5rem' }}
-							/>
-						</Tooltip>
-					</Col>
+			<Sider
+				collapsible
+				theme="light"
+				width={400}
+				collapsed={siderCollapsed}
+				collapsedWidth={0}
+				// eslint-disable-next-line unicorn/no-null
+				trigger={null}
+			>
+				<Toolbox
+					forceUpdate={forceUpdate}
+					canvas1Ref={canvas1Ref}
+					canvas2Ref={canvas2Ref}
+					canvas3Ref={canvas3Ref}
+					challengesOptions={challengesOptions}
+					updateChallengesOptions={updateChallengesOptions}
+				/>
+			</Sider>
 
-					<Col flex="auto">
-						<Row justify="center">
-							<Space size="large">
-								<div id="r-showcase" className="pixel-channel-showcase">
-									{pixelShowcase.r}
-								</div>
+			<Layout>
+				<Header>
+					<Row gutter={16} justify="center" align="middle">
+						<Col>
+							<Tooltip placement="bottomLeft" mouseEnterDelay={1} title="Abrir caixa de ferramentas.">
+								<Button
+									type="primary"
+									size="large"
+									icon={<ToolOutlined />}
+									onClick={toggleSiderCollapse}
+									style={{ width: '5rem' }}
+								/>
+							</Tooltip>
+						</Col>
 
-								<div id="g-showcase" className="pixel-channel-showcase">
-									{pixelShowcase.g}
-								</div>
+						<Col flex="auto">
+							<Row gutter={12} justify="center">
+								<Col>
+									<div id="r-showcase" className="pixel-channel-showcase">
+										{pixelShowcase.r}
+									</div>
+								</Col>
 
-								<div id="b-showcase" className="pixel-channel-showcase">
-									{pixelShowcase.b}
-								</div>
+								<Col>
+									<div id="g-showcase" className="pixel-channel-showcase">
+										{pixelShowcase.g}
+									</div>
+								</Col>
 
-								<div id="a-showcase" className="pixel-channel-showcase">
-									{pixelShowcase.a}
-								</div>
-							</Space>
-						</Row>
-					</Col>
+								<Col>
+									<div id="b-showcase" className="pixel-channel-showcase">
+										{pixelShowcase.b}
+									</div>
+								</Col>
 
-					<Col>
-						<Tooltip placement="bottomLeft" title="Abrir histograma.">
-							<Button
-								type="primary"
-								size="large"
-								icon={<BarChartOutlined />}
-								onClick={openHistogram}
-								style={{ width: '5rem' }}
-							/>
-						</Tooltip>
-					</Col>
+								<Col>
+									<div id="a-showcase" className="pixel-channel-showcase">
+										{pixelShowcase.a}
+									</div>
+								</Col>
+							</Row>
+						</Col>
+
+						<Col>
+							<Tooltip placement="bottomRight" mouseEnterDelay={1} title="Abrir histograma.">
+								<Button
+									type="primary"
+									size="large"
+									icon={<BarChartOutlined />}
+									onClick={openHistogram}
+									style={{ width: '5rem' }}
+								/>
+							</Tooltip>
+						</Col>
+					</Row>
+				</Header>
+
+				<Row justify="space-between" style={{ background: 'white' }}>
+					{!canvas1IsEmpty && (
+						<Col flex="auto" style={{ textAlign: 'center' }}>
+							<Text strong>Canvas 1</Text>
+						</Col>
+					)}
+
+					{!canvas2IsEmpty && (
+						<Col flex="auto" style={{ textAlign: 'center' }}>
+							<Text strong>Canvas 2</Text>
+						</Col>
+					)}
+
+					{!canvas3IsEmpty && (
+						<Col flex="auto" style={{ textAlign: 'center' }}>
+							<Text strong>Canvas 3 (resultado)</Text>
+						</Col>
+					)}
 				</Row>
-			</Header>
 
-			<Content style={{ display: 'flex', justifyContent: 'space-between', height: 'calc(100vh - 64px)' }}>
-				<Row justify="center" align="middle" style={{ width: '100%' }}>
-					<Col
-						className="canvas-wrapper"
-						span={
-							// eslint-disable-next-line unicorn/no-nested-ternary
-							canvas1IsEmpty ? 0 : canvas2IsEmpty && canvas3IsEmpty ? '' : canvas2IsEmpty || canvas3IsEmpty ? 12 : 8
-						}
-					>
-						{/* eslint-disable-next-line jsx-a11y/mouse-events-have-key-events */}
-						<canvas
-							ref={canvas1Ref}
-							id="canvas-1"
-							width="0"
-							height="0"
-							data-title="canvas 1"
-							onMouseMove={canvasMouseMove}
-							onMouseOut={canvasMouseOut}
-							onMouseDown={canvasMouseDown}
-							onMouseUp={canvasMouseUp}
-						/>
-					</Col>
+				<Content>
+					<Row justify="center" align="middle" style={{ width: '100%', height: '100%' }}>
+						<Col className="canvas-wrapper" span={canvasWrapperColSpan(canvas1IsEmpty, canvas2IsEmpty, canvas3IsEmpty)}>
+							{/* eslint-disable-next-line jsx-a11y/mouse-events-have-key-events */}
+							<canvas
+								ref={canvas1Ref}
+								id="canvas-1"
+								width="0"
+								height="0"
+								data-title="canvas 1"
+								onMouseMove={canvasMouseMove}
+								onMouseOut={canvasMouseOut}
+								onMouseDown={canvasMouseDown}
+								onMouseUp={canvasMouseUp}
+							/>
+						</Col>
 
-					<Col
-						className="canvas-wrapper"
-						span={
-							// eslint-disable-next-line unicorn/no-nested-ternary
-							canvas2IsEmpty ? 0 : canvas1IsEmpty && canvas3IsEmpty ? '' : canvas1IsEmpty || canvas3IsEmpty ? 12 : 8
-						}
-					>
-						{/* eslint-disable-next-line jsx-a11y/mouse-events-have-key-events */}
-						<canvas
-							ref={canvas2Ref}
-							id="canvas-2"
-							width="0"
-							height="0"
-							data-title="canvas 2"
-							onMouseMove={canvasMouseMove}
-							onMouseOut={canvasMouseOut}
-							onMouseDown={canvasMouseDown}
-							onMouseUp={canvasMouseUp}
-						/>
-					</Col>
-					<Col
-						className="canvas-wrapper"
-						span={
-							// eslint-disable-next-line unicorn/no-nested-ternary
-							canvas3IsEmpty ? 0 : canvas1IsEmpty && canvas2IsEmpty ? '' : canvas1IsEmpty || canvas2IsEmpty ? 12 : 8
-						}
-					>
-						{/* eslint-disable-next-line jsx-a11y/mouse-events-have-key-events */}
-						<canvas
-							ref={canvas3Ref}
-							id="canvas-3"
-							width="0"
-							height="0"
-							data-title="canvas 3 (resultado)"
-							onMouseMove={canvasMouseMove}
-							onMouseOut={canvasMouseOut}
-							onMouseDown={canvasMouseDown}
-							onMouseUp={canvasMouseUp}
-						/>
-					</Col>
-				</Row>
-			</Content>
+						<Col className="canvas-wrapper" span={canvasWrapperColSpan(canvas2IsEmpty, canvas1IsEmpty, canvas3IsEmpty)}>
+							{/* eslint-disable-next-line jsx-a11y/mouse-events-have-key-events */}
+							<canvas
+								ref={canvas2Ref}
+								id="canvas-2"
+								width="0"
+								height="0"
+								data-title="canvas 2"
+								onMouseMove={canvasMouseMove}
+								onMouseOut={canvasMouseOut}
+								onMouseDown={canvasMouseDown}
+								onMouseUp={canvasMouseUp}
+							/>
+						</Col>
+
+						<Col className="canvas-wrapper" span={canvasWrapperColSpan(canvas3IsEmpty, canvas1IsEmpty, canvas2IsEmpty)}>
+							{/* eslint-disable-next-line jsx-a11y/mouse-events-have-key-events */}
+							<canvas
+								ref={canvas3Ref}
+								id="canvas-3"
+								width="0"
+								height="0"
+								data-title="canvas 3 (resultado)"
+								onMouseMove={canvasMouseMove}
+								onMouseOut={canvasMouseOut}
+								onMouseDown={canvasMouseDown}
+								onMouseUp={canvasMouseUp}
+							/>
+						</Col>
+					</Row>
+				</Content>
+			</Layout>
 		</Layout>
 	);
 };
