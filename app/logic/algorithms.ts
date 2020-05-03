@@ -31,33 +31,33 @@ export const drawBorder = (
 
 	const { borderColor: { r, g, b, a = 255 } = { r: 0, g: 102, b: 204 }, borderWidth = 1 } = options;
 
-	const borderWidthRange = [...new Array(Math.min(borderWidth, maxX - minX, maxY - minY)).keys()];
+	const minBorderWidth = Math.min(borderWidth, maxX - minX, maxY - minY);
 
 	// iterate through the x-coordinates of the specified area
 	for (let x = minX; x <= maxX; x += 1) {
 		// set the color of the pixels at the x-coordinate
-		borderWidthRange.forEach((j) => {
+		for (let j = 0; j < minBorderWidth; j += 1) {
 			[indexOfPixel(x, minY + j, width), indexOfPixel(x, maxY - j, width)].forEach((i) => {
 				data[i] = r;
 				data[i + 1] = g;
 				data[i + 2] = b;
 				data[i + 3] = a;
 			});
-		});
+		}
 	}
 
 	// iterate through the y-coordinates of the specified area
 	// skip the edge pixels because they are already covered by the x-coordinates iteration
-	for (let y = minY + 1; y < maxY; y += 1) {
+	for (let y = minY + minBorderWidth; y <= maxY - minBorderWidth; y += 1) {
 		// set the color of the pixels at the y-coordinate
-		borderWidthRange.forEach((j) => {
+		for (let j = 0; j < minBorderWidth; j += 1) {
 			[indexOfPixel(minX + j, y, width), indexOfPixel(maxX - j, y, width)].forEach((i) => {
 				data[i] = r;
 				data[i + 1] = g;
 				data[i + 2] = b;
 				data[i + 3] = a;
 			});
-		});
+		}
 	}
 
 	return newImageData;
