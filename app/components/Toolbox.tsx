@@ -357,7 +357,7 @@ export default ({
 				</Row>
 			</Header>
 
-			<Content style={{ padding: '2rem 1rem 1rem' }}>
+			<Content style={{ overflow: 'auto', padding: '2rem 1rem 1rem' }}>
 				<Row gutter={12}>
 					<Col span={8}>
 						<Tooltip placement="topLeft" mouseEnterDelay={1} title="Carregar uma imagem ao canvas alvo.">

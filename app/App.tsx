@@ -176,7 +176,7 @@ export default () => {
 	};
 
 	return (
-		<Layout style={{ height: '100vh' }}>
+		<Layout style={{ overflow: 'hidden', height: '100vh' }}>
 			<Modal
 				centered
 				destroyOnClose
