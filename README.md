@@ -81,6 +81,50 @@ App for Digital Image Processing algorithms testing. 🧪
 
 ![Challenge (Border Drawing)](/screenshots/dimp-challenge-border-marking.png)
 
+## Screenshots (Tests)
+
+### Test2016A1 - Question 1
+
+![Test2016A1 - Question 1](/screenshots/dimp-test2016A1-qt1.png)
+
+### Test2016A1 - Question 2
+
+![Test2016A1 - Question 2](/screenshots/dimp-test2016A1-qt2.png)
+
+### Test2016A1 - Question 3
+
+![Test2016A1 - Question 3 - 1](/screenshots/dimp-test2016A1-qt3-1.png)
+
+![Test2016A1 - Question 3 - 2](/screenshots/dimp-test2016A1-qt3-2.png)
+
+### Test2017B1 - Question 1
+
+![Test2017B1 - Question 1](/screenshots/dimp-test2017B1-qt1.png)
+
+### Test2017B1 - Question 2
+
+![Test2017B1 - Question 2](/screenshots/dimp-test2017B1-qt2.png)
+
+### Test2017B1 - Question 3
+
+![Test2017B1 - Question 3 - 1](/screenshots/dimp-test2017B1-qt3-1.png)
+
+![Test2017B1 - Question 3 - 2](/screenshots/dimp-test2017B1-qt3-2.png)
+
+### Test2019A1 - Question 1
+
+![Test2019A1 - Question 1](/screenshots/dimp-test2019A1-qt1.png)
+
+### Test2019A1 - Question 2
+
+![Test2019A1 - Question 2](/screenshots/dimp-test2019A1-qt2.png)
+
+### Test2019A1 - Question 3
+
+![Test2019A1 - Question 3 - 1](/screenshots/dimp-test2019A1-qt3-1.png)
+
+![Test2019A1 - Question 3 - 2](/screenshots/dimp-test2019A1-qt3-2.png)
+
 ## License
 
 This project is under a [MIT license](/LICENSE).
