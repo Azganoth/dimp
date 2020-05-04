@@ -17,9 +17,9 @@ App for Digital Image Processing algorithms testing. 🧪
 
 ## Screenshots
 
-### No active canvases
+### Interface
 
-![No Active Canvases](/screenshots/dimp-no-active-canvases.png)
+![Interface](/screenshots/dimp-interface.png)
 
 ### One active canvases
 
@@ -32,10 +32,6 @@ App for Digital Image Processing algorithms testing. 🧪
 ### Three active canvases
 
 ![Three Active Canvases](/screenshots/dimp-three-active-canvases.png)
-
-### Toolbox
-
-![Toolbox](/screenshots/dimp-toolbox.png)
 
 ### Histogram
 
