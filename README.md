@@ -1,6 +1,10 @@
 <p align="center">
   <img src="/app/media/icon.png" alt="dimp" />
   <h1 align="center">DIMP</h1>
+
+  <h1 align="center">
+		<a href="https://github.com/Azganoth/dimp/releases">Download</a>
+	</h1>
 </p>
 
 App for Digital Image Processing algorithms testing. 🧪
