@@ -6,8 +6,9 @@ import Toolbox from 'app/components/Toolbox';
 import Histogram from 'app/components/Histogram';
 import RegionSelection from 'app/logic/RegionSelection';
 import { getCanvasImage, setCanvasImage } from 'app/logic/helpers';
-import { ChallengesOptions, PixelShowcase } from 'app/logic/types';
+import { ChallengesOptions, PixelShowcase, TestsOptions } from 'app/logic/types';
 import * as algorithms from 'app/logic/algorithms';
+import * as tests from 'app/logic/tests';
 
 const { Sider, Header, Content } = Layout;
 const { Text } = Typography;
@@ -41,6 +42,18 @@ export default () => {
 				color: options.borderMarking?.color ?? challengesOptions.borderMarking.color,
 			},
 		});
+	};
+
+	// TESTS
+
+	const [testsOptions, setTestsOptions] = useState<TestsOptions>({
+		test2016A1Qt2Active: false,
+		test2019A1Qt3Active: false,
+		test2019A1Qt3Colors: { r: false, g: false, b: false },
+	});
+
+	const updateTestsOptions = (options: { [P in keyof TestsOptions]?: TestsOptions[P] }) => {
+		setTestsOptions({ ...testsOptions, ...options });
 	};
 
 	// HISTOGRAM
@@ -126,9 +139,19 @@ export default () => {
 		}
 
 		if (regionSelection) {
+			const { imageData, startX, startY, endX, endY } = regionSelection;
+
 			if (!challengesOptions.borderMarking.active) {
 				// recover the original image
-				setCanvasImage(regionSelection.imageData, canvas);
+				setCanvasImage(imageData, canvas);
+			}
+
+			if (testsOptions.test2016A1Qt2Active) {
+				setCanvasImage(tests.test2016A1Qt2(imageData, startX, startY, endX, endY), canvas);
+			}
+
+			if (testsOptions.test2019A1Qt3Active) {
+				updateTestsOptions({ test2019A1Qt3Colors: tests.test2019A1Qt3(imageData, startX, startY, endX, endY) });
 			}
 
 			regionSelection = undefined;
@@ -145,9 +168,19 @@ export default () => {
 		updatePixelShowcase();
 
 		if (regionSelection) {
+			const { imageData, startX, startY, endX, endY } = regionSelection;
+
 			if (!challengesOptions.borderMarking.active) {
 				// recover the original image
-				setCanvasImage(regionSelection.imageData, canvas);
+				setCanvasImage(imageData, canvas);
+			}
+
+			if (testsOptions.test2016A1Qt2Active) {
+				setCanvasImage(tests.test2016A1Qt2(imageData, startX, startY, endX, endY), canvas);
+			}
+
+			if (testsOptions.test2019A1Qt3Active) {
+				updateTestsOptions({ test2019A1Qt3Colors: tests.test2019A1Qt3(imageData, startX, startY, endX, endY) });
 			}
 
 			regionSelection = undefined;
@@ -231,6 +264,8 @@ export default () => {
 					canvas3Ref={canvas3Ref}
 					challengesOptions={challengesOptions}
 					updateChallengesOptions={updateChallengesOptions}
+					testsOptions={testsOptions}
+					updateTestsOptions={updateTestsOptions}
 				/>
 			</Sider>
 

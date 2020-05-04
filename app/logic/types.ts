@@ -18,3 +18,9 @@ export type ChallengesOptions = {
 		color: RGBAColor;
 	};
 };
+
+export type TestsOptions = {
+	test2016A1Qt2Active: boolean;
+	test2019A1Qt3Active: boolean;
+	test2019A1Qt3Colors: { r: boolean; g: boolean; b: boolean };
+};

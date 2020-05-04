@@ -6,11 +6,13 @@ import path from 'path';
 import { promises as fs } from 'fs';
 
 import ColorPicker from 'app/components/ui/ColorPicker';
+import InputNumberFormatted from 'app/components/ui/InputNumberFormatted';
 import SliderInput from 'app/components/ui/SliderInput';
 import { MESSAGES, SUPPORTED_IMAGE_TYPES } from 'app/logic/constants';
 import { getCanvasImage, setCanvasImage } from 'app/logic/helpers';
-import { ChallengesOptions } from 'app/logic/types';
+import { ChallengesOptions, RGBAColor, TestsOptions } from 'app/logic/types';
 import * as algorithms from 'app/logic/algorithms';
+import * as tests from 'app/logic/tests';
 
 const { Header, Content, Footer } = Layout;
 const { Text, Title } = Typography;
@@ -25,6 +27,8 @@ type Props = {
 	updateChallengesOptions: (
 		value: { [P in keyof ChallengesOptions]?: { [Q in keyof ChallengesOptions[P]]?: ChallengesOptions[P][Q] } }
 	) => void;
+	testsOptions: TestsOptions;
+	updateTestsOptions: (value: { [P in keyof TestsOptions]?: TestsOptions[P] }) => void;
 };
 
 export default ({
@@ -34,6 +38,8 @@ export default ({
 	canvas3Ref,
 	challengesOptions,
 	updateChallengesOptions,
+	testsOptions,
+	updateTestsOptions,
 }: Props) => {
 	const [targetCanvasRef, setTargetCanvasRef] = useState(canvas1Ref);
 
@@ -347,6 +353,165 @@ export default ({
 		forceUpdate();
 	};
 
+	// TESTS
+
+	const [test2016A1Qt1NumberOfColumns, setTest2016A1Qt1NumberOfColumns] = useState(1);
+
+	const canvasTest2016A1Qt1 = () => {
+		const { current: canvas } = targetCanvasRef;
+		const { current: canvas3 } = canvas3Ref;
+
+		if (!canvas || !canvas3) {
+			notification.error({ message: MESSAGES.INTERNAL_ERROR });
+			return;
+		}
+
+		if (!canvas.width || !canvas.height) {
+			notification.info({ message: MESSAGES.empty(canvas.dataset.title!) });
+			return;
+		}
+
+		if (test2016A1Qt1NumberOfColumns > canvas.width) {
+			notification.error({
+				message: `O número de colunas é maior que o número de pixels na largura da imagem... escolha um número menor ou igual a ${canvas.width}!`,
+			});
+			return;
+		}
+
+		setCanvasImage(tests.test2016A1Qt1(getCanvasImage(canvas), test2016A1Qt1NumberOfColumns), canvas3);
+
+		forceUpdate();
+	};
+
+	const [test2016A1Qt3RectIsFilled, setTest2016A1Qt3RectIsFilled] = useState(false);
+
+	const canvasTest2016A1Qt3 = () => {
+		const { current: canvas } = targetCanvasRef;
+
+		if (!canvas) {
+			notification.error({ message: MESSAGES.INTERNAL_ERROR });
+			return;
+		}
+
+		if (!canvas.width || !canvas.height) {
+			notification.info({ message: MESSAGES.empty(canvas.dataset.title!) });
+			return;
+		}
+
+		setTest2016A1Qt3RectIsFilled(tests.test2016A1Qt3(getCanvasImage(canvas)));
+
+		forceUpdate();
+	};
+
+	const [test2017B1Qt1BorderWidth, setTest2017B1Qt1BorderWidth] = useState(0);
+	const [test2017B1Qt1BorderColor, setTest2017B1Qt1BorderColor] = useState<RGBAColor>({ r: 255, g: 0, b: 0 });
+
+	const canvasTest2017B1Qt1 = () => {
+		const { current: canvas } = targetCanvasRef;
+		const { current: canvas3 } = canvas3Ref;
+
+		if (!canvas || !canvas3) {
+			notification.error({ message: MESSAGES.INTERNAL_ERROR });
+			return;
+		}
+
+		if (!canvas.width || !canvas.height) {
+			notification.info({ message: MESSAGES.empty(canvas.dataset.title!) });
+			return;
+		}
+
+		setCanvasImage(
+			tests.test2017B1Qt1(getCanvasImage(canvas), test2017B1Qt1BorderColor, test2017B1Qt1BorderWidth),
+			canvas3
+		);
+
+		forceUpdate();
+	};
+
+	const canvasTest2017B1Qt2 = () => {
+		const { current: canvas } = targetCanvasRef;
+		const { current: canvas3 } = canvas3Ref;
+
+		if (!canvas || !canvas3) {
+			notification.error({ message: MESSAGES.INTERNAL_ERROR });
+			return;
+		}
+
+		if (!canvas.width || !canvas.height) {
+			notification.info({ message: MESSAGES.empty(canvas.dataset.title!) });
+			return;
+		}
+
+		setCanvasImage(tests.test2017B1Qt2(getCanvasImage(canvas)), canvas3);
+
+		forceUpdate();
+	};
+
+	const [test2017B1Qt3Object, setTest2017B1Qt3Object] = useState<'Nenhum' | 'Quadrado' | 'Círculo'>('Nenhum');
+
+	const canvasTest2017B1Qt3 = () => {
+		const { current: canvas } = targetCanvasRef;
+
+		if (!canvas) {
+			notification.error({ message: MESSAGES.INTERNAL_ERROR });
+			return;
+		}
+
+		if (!canvas.width || !canvas.height) {
+			notification.info({ message: MESSAGES.empty(canvas.dataset.title!) });
+			return;
+		}
+
+		setTest2017B1Qt3Object(tests.test2017B1Qt3(getCanvasImage(canvas)));
+
+		forceUpdate();
+	};
+
+	const [test2019A1Qt1ColumnColor, setTest2019A1Qt1ColumnColor] = useState<RGBAColor>({ r: 255, g: 0, b: 0 });
+	const [test2019A1Qt1ColumnGutter, setTest2019A1Qt1ColumnGutter] = useState(0);
+
+	const canvasTest2019A1Qt1 = () => {
+		const { current: canvas } = targetCanvasRef;
+		const { current: canvas3 } = canvas3Ref;
+
+		if (!canvas || !canvas3) {
+			notification.error({ message: MESSAGES.INTERNAL_ERROR });
+			return;
+		}
+
+		if (!canvas.width || !canvas.height) {
+			notification.info({ message: MESSAGES.empty(canvas.dataset.title!) });
+			return;
+		}
+
+		setCanvasImage(
+			tests.test2019A1Qt1(getCanvasImage(canvas), test2019A1Qt1ColumnColor, test2019A1Qt1ColumnGutter),
+			canvas3
+		);
+
+		forceUpdate();
+	};
+
+	const [test2019A1Qt2NumberOfCircles, setTest2019A1Qt2NumberOfCircles] = useState(0);
+
+	const canvasTest2019A1Qt2 = () => {
+		const { current: canvas } = targetCanvasRef;
+
+		if (!canvas) {
+			notification.error({ message: MESSAGES.INTERNAL_ERROR });
+			return;
+		}
+
+		if (!canvas.width || !canvas.height) {
+			notification.info({ message: MESSAGES.empty(canvas.dataset.title!) });
+			return;
+		}
+
+		setTest2019A1Qt2NumberOfCircles(tests.test2019A1Qt2(getCanvasImage(canvas)));
+
+		forceUpdate();
+	};
+
 	return (
 		<Layout style={{ height: '100%', background: 'white' }}>
 			<Header style={{ padding: '1rem' }}>
@@ -405,7 +570,7 @@ export default ({
 					</Col>
 				</Row>
 
-				<Tabs defaultActiveKey="1">
+				<Tabs defaultActiveKey="8">
 					<TabPane tab="Negativa" key="1">
 						<Row justify="center">
 							<Col>
@@ -696,6 +861,286 @@ export default ({
 									onChange={(value) => updateChallengesOptions({ borderMarking: { color: value } })}
 									placement="bottomRight"
 									colorPickerProps={{ disableAlpha: true }}
+								/>
+							</Col>
+						</Row>
+					</TabPane>
+
+					<TabPane tab="Provas" key="8">
+						<Row justify="center">
+							<Col>
+								<Title level={4}>
+									<a href="https://unisulbr-my.sharepoint.com/:w:/g/personal/ademir_ferreira_unisul_br/EflymIL1LPBAj10QHHYqkzYByEc6xPKg95Kb66oRVzel3g?e=kCZifl">
+										Prova 2016A1
+									</a>
+								</Title>
+							</Col>
+						</Row>
+
+						<Divider dashed>Questão 1</Divider>
+
+						<Row gutter={[16, 16]} align="middle">
+							<Col>
+								<Text>Quantidade de colunas:</Text>
+							</Col>
+
+							<Col span={6}>
+								<InputNumberFormatted
+									value={test2016A1Qt1NumberOfColumns}
+									min={1}
+									onChange={setTest2016A1Qt1NumberOfColumns}
+								/>
+							</Col>
+						</Row>
+
+						<Row gutter={[0, 16]} justify="center">
+							<Col>
+								<Button type="primary" size="large" icon={<FireFilled />} onClick={() => canvasTest2016A1Qt1()}>
+									Aplicar resolução
+								</Button>
+							</Col>
+						</Row>
+
+						<Row>
+							<Col>
+								<Text mark>
+									Uma pequena coluna adicional poderá ser criada devido a um possível número decimal resultante da
+									divisão entre a largura da imagem e o número de colunas.
+								</Text>
+							</Col>
+						</Row>
+
+						<Divider dashed>Questão 2</Divider>
+
+						<Row justify="center">
+							<Col>
+								<Switch
+									checked={testsOptions.test2016A1Qt2Active}
+									onChange={(value) => updateTestsOptions({ test2016A1Qt2Active: value })}
+								/>
+							</Col>
+						</Row>
+
+						<Divider dashed>Questão 3</Divider>
+
+						<Row gutter={[16, 16]} align="middle">
+							<Col>
+								<Text>O quadrado está preenchido?</Text>
+							</Col>
+
+							<Col>
+								<Text strong>{test2016A1Qt3RectIsFilled ? 'Sim' : 'Não'}</Text>
+							</Col>
+						</Row>
+
+						<Row gutter={[0, 16]} justify="center">
+							<Col>
+								<Button type="primary" size="large" icon={<FireFilled />} onClick={() => canvasTest2016A1Qt3()}>
+									Aplicar resolução
+								</Button>
+							</Col>
+						</Row>
+
+						<Row gutter={[0, 16]} align="middle">
+							<Col>
+								<Text mark>
+									O quadrado precisa ser de cor preta e, caso não seja preenchido, ter espessura de linha de um pixel
+									para um resultado correto.
+								</Text>
+							</Col>
+						</Row>
+
+						<Row justify="center">
+							<Col>
+								<Title level={4}>
+									<a href="https://unisulbr-my.sharepoint.com/:w:/g/personal/ademir_ferreira_unisul_br/EbGCn6HV37FKtLX5Z0pYBXIBtreE8aLbZTs08PYQWAgBag?e=QLUgGt">
+										Prova 2017B1
+									</a>
+								</Title>
+							</Col>
+						</Row>
+
+						<Divider dashed>Questão 1</Divider>
+
+						<Row gutter={[16, 16]} align="middle">
+							<Col>
+								<Text>Cor da moldura:</Text>
+							</Col>
+
+							<Col>
+								<ColorPicker
+									value={test2017B1Qt1BorderColor}
+									onChange={(value) => setTest2017B1Qt1BorderColor(value)}
+									colorPickerProps={{ disableAlpha: true }}
+								/>
+							</Col>
+						</Row>
+
+						<Row gutter={[16, 16]} align="middle">
+							<Col>
+								<Text>Espessura da moldura:</Text>
+							</Col>
+
+							<Col span={6}>
+								<InputNumberFormatted value={test2017B1Qt1BorderWidth} min={0} onChange={setTest2017B1Qt1BorderWidth} />
+							</Col>
+						</Row>
+
+						<Row justify="center">
+							<Col>
+								<Button type="primary" size="large" icon={<FireFilled />} onClick={() => canvasTest2017B1Qt1()}>
+									Aplicar resolução
+								</Button>
+							</Col>
+						</Row>
+
+						<Divider dashed>Questão 2</Divider>
+
+						<Row justify="center">
+							<Col>
+								<Button type="primary" size="large" icon={<FireFilled />} onClick={() => canvasTest2017B1Qt2()}>
+									Aplicar resolução
+								</Button>
+							</Col>
+						</Row>
+
+						<Divider dashed>Questão 3</Divider>
+
+						<Row gutter={[16, 16]} align="middle">
+							<Col>
+								<Text>O objeto é um quadrado ou um círculo?</Text>
+							</Col>
+
+							<Col>
+								<Text strong>{test2017B1Qt3Object}</Text>
+							</Col>
+						</Row>
+
+						<Row gutter={[0, 16]} justify="center">
+							<Col>
+								<Button type="primary" size="large" icon={<FireFilled />} onClick={() => canvasTest2017B1Qt3()}>
+									Aplicar resolução
+								</Button>
+							</Col>
+						</Row>
+
+						<Row gutter={[0, 16]}>
+							<Col>
+								<Text mark>
+									O objeto precisa ser de cor preta e, caso não seja preenchido, ter espessura de linha de um pixel para
+									um resultado correto.
+								</Text>
+							</Col>
+						</Row>
+
+						<Row justify="center">
+							<Col>
+								<Title level={4}>
+									<a href="https://unisulbr-my.sharepoint.com/:w:/g/personal/ademir_ferreira_unisul_br/EZIZGs5gB1JAn1qh97nGWWUBt0yJTfZyPHC9QB7fZrbV9Q?e=EMWS8Q">
+										Prova 2019A1
+									</a>
+								</Title>
+							</Col>
+						</Row>
+
+						<Divider dashed>Questão 1</Divider>
+
+						<Row gutter={[16, 16]} align="middle">
+							<Col>
+								<Text>Cor da grade:</Text>
+							</Col>
+
+							<Col>
+								<ColorPicker
+									value={test2019A1Qt1ColumnColor}
+									onChange={(value) => setTest2019A1Qt1ColumnColor(value)}
+									colorPickerProps={{ disableAlpha: true }}
+								/>
+							</Col>
+						</Row>
+
+						<Row gutter={[16, 16]} align="middle">
+							<Col>
+								<Text>Espaçamento da grade:</Text>
+							</Col>
+
+							<Col span={6}>
+								<InputNumberFormatted
+									value={test2019A1Qt1ColumnGutter}
+									min={0}
+									onChange={setTest2019A1Qt1ColumnGutter}
+								/>
+							</Col>
+						</Row>
+
+						<Row justify="center">
+							<Col>
+								<Button type="primary" size="large" icon={<FireFilled />} onClick={() => canvasTest2019A1Qt1()}>
+									Aplicar resolução
+								</Button>
+							</Col>
+						</Row>
+
+						<Divider dashed>Questão 2</Divider>
+
+						<Row gutter={[16, 16]} align="middle">
+							<Col>
+								<Text>Quantidade de círculos pretos:</Text>
+							</Col>
+
+							<Col>
+								<Text strong>{test2019A1Qt2NumberOfCircles}</Text>
+							</Col>
+						</Row>
+
+						<Row gutter={[0, 16]} justify="center">
+							<Col>
+								<Button type="primary" size="large" icon={<FireFilled />} onClick={() => canvasTest2019A1Qt2()}>
+									Aplicar resolução
+								</Button>
+							</Col>
+						</Row>
+
+						<Row>
+							<Col>
+								<Text mark>A imagem precisa conter apenas círculos preenchidos para um resultado correto.</Text>
+							</Col>
+						</Row>
+
+						<Divider dashed>Questão 3</Divider>
+
+						<Row gutter={[16, 16]} align="middle">
+							<Col>
+								<Text>Cores puras selecionadas:</Text>
+							</Col>
+
+							<Col>
+								<Text strong>
+									{testsOptions.test2019A1Qt3Active
+										? [
+												testsOptions.test2019A1Qt3Colors.r && 'Vermelho',
+												testsOptions.test2019A1Qt3Colors.g && 'Verde',
+												testsOptions.test2019A1Qt3Colors.b && 'Azul',
+										  ]
+												.filter(Boolean)
+												.join(', ') || 'Nenhuma'
+										: '---'}
+								</Text>
+							</Col>
+						</Row>
+
+						<Row justify="center">
+							<Col>
+								<Switch
+									checked={testsOptions.test2019A1Qt3Active}
+									onChange={(value) =>
+										value
+											? updateTestsOptions({ test2019A1Qt3Active: true })
+											: updateTestsOptions({
+													test2019A1Qt3Active: false,
+													test2019A1Qt3Colors: { r: false, g: false, b: false },
+											  })
+									}
 								/>
 							</Col>
 						</Row>
