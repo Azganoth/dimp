@@ -81,6 +81,22 @@ App for Digital Image Processing algorithms testing. 🧪
 
 ![Challenge (Border Drawing)](/screenshots/dimp-challenge-border-marking.png)
 
+## Screenshots (Test)
+
+### Test2020A1 - Question 1
+
+![Test2020A1 - Question 1](/screenshots/dimp-test2020A1-qt1.png)
+
+### Test2020A1 - Question 2
+
+![Test2020A1 - Question 2](/screenshots/dimp-test2020A1-qt2.png)
+
+### Test2020A1 - Question 3
+
+![Test2020A1 - Question 3 - 1](/screenshots/dimp-test2020A1-qt3-1.png)
+
+![Test2020A1 - Question 3 - 2](/screenshots/dimp-test2020A1-qt3-2.png)
+
 ## License
 
 This project is under a [MIT license](/LICENSE).
