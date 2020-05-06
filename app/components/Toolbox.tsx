@@ -1,5 +1,18 @@
 import React, { useState } from 'react';
-import { Button, Col, Divider, Layout, Radio, Row, Switch, Tabs, Tooltip, Typography, notification } from 'antd';
+import {
+	Button,
+	Checkbox,
+	Col,
+	Divider,
+	Layout,
+	Radio,
+	Row,
+	Switch,
+	Tabs,
+	Tooltip,
+	Typography,
+	notification,
+} from 'antd';
 import { CloseOutlined, DownloadOutlined, FireFilled, GithubOutlined, UploadOutlined } from '@ant-design/icons';
 import { remote } from 'electron';
 import path from 'path';
@@ -11,6 +24,7 @@ import { MESSAGES, SUPPORTED_IMAGE_TYPES } from 'app/logic/constants';
 import { getCanvasImage, setCanvasImage } from 'app/logic/helpers';
 import { ChallengesOptions } from 'app/logic/types';
 import * as algorithms from 'app/logic/algorithms';
+import * as test from 'app/logic/test';
 
 const { Header, Content, Footer } = Layout;
 const { Text, Title } = Typography;
@@ -347,6 +361,68 @@ export default ({
 		forceUpdate();
 	};
 
+	// TEST
+
+	const [test2020A1Qt1Quadrants, setTest2020A1Qt1Quadrants] = useState<number[]>([]);
+
+	const canvasTest2020A1Qt1 = () => {
+		const { current: canvas } = targetCanvasRef;
+		const { current: canvas3 } = canvas3Ref;
+
+		if (!canvas || !canvas3) {
+			notification.error({ message: MESSAGES.INTERNAL_ERROR });
+			return;
+		}
+
+		if (!canvas.width || !canvas.height) {
+			notification.info({ message: MESSAGES.empty(canvas.dataset.title!) });
+			return;
+		}
+
+		setCanvasImage(test.test2020A1Qt1(getCanvasImage(canvas), test2020A1Qt1Quadrants), canvas3);
+
+		forceUpdate();
+	};
+
+	const canvasTest2020A1Qt2 = () => {
+		const { current: canvas } = targetCanvasRef;
+		const { current: canvas3 } = canvas3Ref;
+
+		if (!canvas || !canvas3) {
+			notification.error({ message: MESSAGES.INTERNAL_ERROR });
+			return;
+		}
+
+		if (!canvas.width || !canvas.height) {
+			notification.info({ message: MESSAGES.empty(canvas.dataset.title!) });
+			return;
+		}
+
+		setCanvasImage(test.test2020A1Qt2(getCanvasImage(canvas)), canvas3);
+
+		forceUpdate();
+	};
+
+	const [test2020A1Qt3RectIsOpen, setTest2020A1Qt3RectIsOpen] = useState(false);
+
+	const canvasTest2020A1Qt3 = () => {
+		const { current: canvas } = targetCanvasRef;
+
+		if (!canvas) {
+			notification.error({ message: MESSAGES.INTERNAL_ERROR });
+			return;
+		}
+
+		if (!canvas.width || !canvas.height) {
+			notification.info({ message: MESSAGES.empty(canvas.dataset.title!) });
+			return;
+		}
+
+		setTest2020A1Qt3RectIsOpen(test.test2020A1Qt3(getCanvasImage(canvas)));
+
+		forceUpdate();
+	};
+
 	return (
 		<Layout style={{ height: '100%', background: 'white' }}>
 			<Header style={{ padding: '1rem' }}>
@@ -405,7 +481,7 @@ export default ({
 					</Col>
 				</Row>
 
-				<Tabs defaultActiveKey="1">
+				<Tabs defaultActiveKey="8">
 					<TabPane tab="Negativa" key="1">
 						<Row justify="center">
 							<Col>
@@ -697,6 +773,76 @@ export default ({
 									placement="bottomRight"
 									colorPickerProps={{ disableAlpha: true }}
 								/>
+							</Col>
+						</Row>
+					</TabPane>
+
+					<TabPane tab="Prova" key="8">
+						<Divider dashed>Questão 1</Divider>
+
+						<Row gutter={[16, 16]} justify="center" align="middle">
+							<Checkbox.Group value={test2020A1Qt1Quadrants} onChange={setTest2020A1Qt1Quadrants}>
+								<Row>
+									<Col span={6}>
+										<Checkbox value={1}>1</Checkbox>
+									</Col>
+
+									<Col span={6}>
+										<Checkbox value={2}>2</Checkbox>
+									</Col>
+
+									<Col span={6}>
+										<Checkbox value={3}>3</Checkbox>
+									</Col>
+
+									<Col span={6}>
+										<Checkbox value={4}>4</Checkbox>
+									</Col>
+								</Row>
+							</Checkbox.Group>
+						</Row>
+
+						<Row justify="center">
+							<Col>
+								<Button type="primary" size="large" icon={<FireFilled />} onClick={() => canvasTest2020A1Qt1()}>
+									Aplicar resolução
+								</Button>
+							</Col>
+						</Row>
+
+						<Divider dashed>Questão 2</Divider>
+
+						<Row justify="center">
+							<Col>
+								<Button type="primary" size="large" icon={<FireFilled />} onClick={() => canvasTest2020A1Qt2()}>
+									Aplicar resolução
+								</Button>
+							</Col>
+						</Row>
+
+						<Divider dashed>Questão 3</Divider>
+
+						<Row gutter={[16, 16]} align="middle">
+							<Col>
+								<Text>O retângulo está aberto ou fechado?</Text>
+							</Col>
+
+							<Col>
+								<Text strong>{test2020A1Qt3RectIsOpen ? 'Aberto' : 'Fechado'}</Text>
+							</Col>
+						</Row>
+
+						<Row gutter={[0, 16]} justify="center">
+							<Col>
+								<Button type="primary" size="large" icon={<FireFilled />} onClick={() => canvasTest2020A1Qt3()}>
+									Aplicar resolução
+								</Button>
+							</Col>
+						</Row>
+
+						<Row align="middle">
+							<Col>
+								<Text mark>O retângulo precisa ser de cor preta para um resultado correto.</Text>
 							</Col>
 						</Row>
 					</TabPane>
