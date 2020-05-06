@@ -781,7 +781,12 @@ export default ({
 						<Divider dashed>Questão 1</Divider>
 
 						<Row gutter={[16, 16]} justify="center" align="middle">
-							<Checkbox.Group value={test2020A1Qt1Quadrants} onChange={setTest2020A1Qt1Quadrants}>
+							<Checkbox.Group
+								value={test2020A1Qt1Quadrants}
+								onChange={(value) => {
+									setTest2020A1Qt1Quadrants(value.map((v) => Number(v)));
+								}}
+							>
 								<Row>
 									<Col span={6}>
 										<Checkbox value={1}>1</Checkbox>
