@@ -30,7 +30,7 @@ settings:
       config: 'webpack.config.js'
 
 rules:
-  # Disabled because sometimes the same function will need to return different values or nothing at all...
+  # Disabled because some of the functions may need to return different types
   consistent-return: 0
 
   no-param-reassign: [error, { props: false }]
@@ -39,8 +39,11 @@ rules:
 
   import/extensions: [error, ignorePackages, { js: never, ts: never, jsx: never, tsx: never }]
 
-  # Disabled because the production dependencies will be bundled
+  # Disabled because the production dependencies will be bundled by webpack
   import/no-extraneous-dependencies: off
+
+  # Disabled because it's too annoying
+  import/prefer-default-export: off
 
   promise/avoid-new: error
 
@@ -49,10 +52,16 @@ rules:
 
   unicorn/filename-case: [error, { cases: { camelCase: true, pascalCase: true } }]
 
+  # Disabled because it's frequently used by react
+  unicorn/no-null: off
+
   # Disabled because it's too annoying
   unicorn/prevent-abbreviations: off
 
   react/jsx-filename-extension: [error, extensions: [.jsx, .tsx]]
+
+  # Disabled because it's buggy (https://github.com/yannickcr/eslint-plugin-react/issues/1835)
+  react/jsx-one-expression-per-line: off
 
   prettier/prettier: warn
 
@@ -76,13 +85,14 @@ overrides:
       node/no-unpublished-import: off
       node/no-unpublished-require: off
 
+      node/no-unsupported-features/node-builtins: [error, { version: '>=12.14.1' }]
+
       # Disabled as the rule doesn't exclude scripts executed with `node` but not referenced in 'bin'
       node/shebang: off
 
   - files: app/**/*
     extends:
       - plugin:import/typescript
-      - plugin:@typescript-eslint/eslint-recommended
       - plugin:@typescript-eslint/recommended
       - prettier/@typescript-eslint
     env:
@@ -92,13 +102,7 @@ overrides:
       project: 'app/tsconfig.json'
     rules:
       # Disabled because writing void everywhere hurts readability
-      '@typescript-eslint/explicit-function-return-type': off
+      '@typescript-eslint/explicit-module-boundary-types': off
 
-      # Disabled because it'll be frequently used by canvas#getContext('2d') calls
+      # Disabled because it'll be used carefully
       '@typescript-eslint/no-non-null-assertion': off
-
-      # Disabled because it's buggy (https://github.com/yannickcr/eslint-plugin-react/issues/1835)
-      react/jsx-one-expression-per-line: off
-
-      # Disabled because there are a lot of props to be passed on some components
-      react/jsx-props-no-spreading: off

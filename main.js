@@ -1,5 +1,6 @@
 const { BrowserWindow, app, shell } = require('electron');
 const path = require('path');
+const os = require('os');
 
 let win;
 app.once('ready', () => {
@@ -10,17 +11,18 @@ app.once('ready', () => {
 		minHeight: 270,
 		useContentSize: true,
 		autoHideMenuBar: true,
+		icon: path.resolve(__dirname, `public/media/icon.${os.platform() === 'win32' ? 'ico' : 'png'}`),
 		webPreferences: {
+			enableRemoteModule: true,
 			nodeIntegration: true,
 		},
-		icon: path.resolve(__dirname, 'public/media/icon.ico'),
 	});
 
 	win.loadFile(path.resolve(__dirname, 'public/index.html'));
 
 	// prevent links from loading inside the app
-	win.webContents.on('will-navigate', (e, url) => {
-		e.preventDefault();
+	win.webContents.on('will-navigate', (event, url) => {
+		event.preventDefault();
 		shell.openExternal(url);
 	});
 
@@ -32,6 +34,3 @@ app.once('ready', () => {
 app.on('window-all-closed', () => {
 	app.quit();
 });
-
-// remove when updating to electron 9
-app.allowRendererProcessReuse = false;

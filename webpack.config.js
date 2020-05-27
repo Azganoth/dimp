@@ -1,10 +1,10 @@
 const { ContextReplacementPlugin } = require('webpack');
 const path = require('path');
 
-const ForkTsCheckerPlugin = require('fork-ts-checker-webpack-plugin');
 const CopyPlugin = require('copy-webpack-plugin');
 const HtmlPlugin = require('html-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
+const ForkTsCheckerPlugin = require('fork-ts-checker-webpack-plugin');
 const TerserPlugin = require('terser-webpack-plugin');
 const OptimizeCssAssetsPlugin = require('optimize-css-assets-webpack-plugin');
 
@@ -69,7 +69,7 @@ module.exports = (webpackEnv) => {
 						priority: 20,
 					},
 					antd: {
-						test: /[/\\]node_modules[/\\]antd/,
+						test: /[/\\]node_modules[/\\](antd|@ant-design)/,
 						priority: 10,
 					},
 				},
@@ -77,17 +77,15 @@ module.exports = (webpackEnv) => {
 		},
 
 		plugins: [
-			new ContextReplacementPlugin(/moment[/\\]locale$/, /en|pt-br/),
-			new ForkTsCheckerPlugin({
-				async: isDevelopmentEnv,
-				silent: true,
+			new ContextReplacementPlugin(/moment[/\\]locale$/, /en/),
+			new CopyPlugin({
+				patterns: [
+					{
+						from: 'media',
+						to: 'media',
+					},
+				],
 			}),
-			new CopyPlugin([
-				{
-					from: 'media',
-					to: 'media',
-				},
-			]),
 			new HtmlPlugin({
 				inject: true,
 				template: 'index.html',
@@ -97,6 +95,10 @@ module.exports = (webpackEnv) => {
 					filename: 'css/[name].css',
 					chunkFilename: 'css/[name].chunk.css',
 				}),
+			new ForkTsCheckerPlugin({
+				async: isDevelopmentEnv,
+				silent: true,
+			}),
 		].filter(Boolean),
 
 		module: {
