@@ -7,14 +7,26 @@ import { promises as fs } from 'fs';
 
 import ColorPicker from 'app/components/ui/ColorPicker';
 import SliderInput from 'app/components/ui/SliderInput';
-import { MESSAGES, SUPPORTED_IMAGE_TYPES } from 'app/logic/constants';
+import { ChallengesOptions } from 'app/typing/common';
 import { getCanvasImage, setCanvasImage } from 'app/logic/helpers';
-import { ChallengesOptions } from 'app/logic/types';
 import * as algorithms from 'app/logic/algorithms';
 
 const { Header, Content, Footer } = Layout;
 const { Text, Title } = Typography;
 const { TabPane } = Tabs;
+
+const MESSAGES = {
+	INTERNAL_ERROR:
+		'Desculpe, ocorreu um erro interno, reinicie a aplicação e tente novamente. Caso o erro persista abra um issue na página do repositório.',
+	empty: (subject: string) => `O ${subject} está vazio.`,
+};
+
+const SUPPORTED_IMAGE_TYPES = [
+	{ name: 'Imagem PNG', extensions: ['png'] },
+	{ name: 'Imagem JPEG', extensions: ['jpg', 'jpeg'] },
+	{ name: 'Imagem BMP', extensions: ['bmp'] },
+	{ name: 'Imagem TIFF', extensions: ['tif', 'tiff'] },
+];
 
 type Props = {
 	forceUpdate: React.DispatchWithoutAction;

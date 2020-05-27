@@ -6,7 +6,7 @@ import Toolbox from 'app/components/Toolbox';
 import Histogram from 'app/components/Histogram';
 import RegionSelection from 'app/logic/RegionSelection';
 import { getCanvasImage, setCanvasImage } from 'app/logic/helpers';
-import { ChallengesOptions, PixelShowcase } from 'app/logic/types';
+import { ChallengesOptions, PixelShowcase } from 'app/typing/common';
 import * as algorithms from 'app/logic/algorithms';
 
 const { Sider, Header, Content } = Layout;
@@ -66,11 +66,8 @@ export default () => {
 
 	// CANVASES
 
-	// eslint-disable-next-line unicorn/no-null
 	const canvas1Ref = useRef<HTMLCanvasElement | null>(null);
-	// eslint-disable-next-line unicorn/no-null
 	const canvas2Ref = useRef<HTMLCanvasElement | null>(null);
-	// eslint-disable-next-line unicorn/no-null
 	const canvas3Ref = useRef<HTMLCanvasElement | null>(null);
 
 	const canvasMouseMove = ({ target, nativeEvent: { offsetX, offsetY } }: React.MouseEvent<HTMLCanvasElement>) => {
@@ -215,15 +212,7 @@ export default () => {
 				</Row>
 			</Modal>
 
-			<Sider
-				collapsible
-				theme="light"
-				width={400}
-				collapsed={siderCollapsed}
-				collapsedWidth={0}
-				// eslint-disable-next-line unicorn/no-null
-				trigger={null}
-			>
+			<Sider collapsible theme="light" width={400} collapsed={siderCollapsed} collapsedWidth={0} trigger={null}>
 				<Toolbox
 					forceUpdate={forceUpdate}
 					canvas1Ref={canvas1Ref}
@@ -314,6 +303,7 @@ export default () => {
 				<Content>
 					<Row justify="center" align="middle" style={{ width: '100%', height: '100%' }}>
 						<Col className="canvas-wrapper" span={canvasWrapperColSpan(canvas1IsEmpty, canvas2IsEmpty, canvas3IsEmpty)}>
+							{/* Disabled because it'll not be keyboard friendly */}
 							{/* eslint-disable-next-line jsx-a11y/mouse-events-have-key-events */}
 							<canvas
 								ref={canvas1Ref}
@@ -329,6 +319,7 @@ export default () => {
 						</Col>
 
 						<Col className="canvas-wrapper" span={canvasWrapperColSpan(canvas2IsEmpty, canvas1IsEmpty, canvas3IsEmpty)}>
+							{/* Disabled because it'll not be keyboard friendly */}
 							{/* eslint-disable-next-line jsx-a11y/mouse-events-have-key-events */}
 							<canvas
 								ref={canvas2Ref}
@@ -344,6 +335,7 @@ export default () => {
 						</Col>
 
 						<Col className="canvas-wrapper" span={canvasWrapperColSpan(canvas3IsEmpty, canvas1IsEmpty, canvas2IsEmpty)}>
+							{/* Disabled because it'll not be keyboard friendly */}
 							{/* eslint-disable-next-line jsx-a11y/mouse-events-have-key-events */}
 							<canvas
 								ref={canvas3Ref}

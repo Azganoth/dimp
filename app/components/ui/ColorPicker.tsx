@@ -3,7 +3,7 @@ import { Button, Popover } from 'antd';
 import { PopoverProps } from 'antd/lib/popover';
 import { ChromePicker, ChromePickerProps } from 'react-color';
 
-import { RGBAColor } from 'app/logic/types';
+import { RGBAColor } from 'app/typing/common';
 
 type Props = Omit<PopoverProps, 'content'> & {
 	value: RGBAColor;
@@ -26,9 +26,13 @@ export default ({ value, onChange, width = '48px', height = '24px', colorPickerP
 						picker: { boxShadow: 'none', background: 'transparent', fontFamily: 'inherit' },
 					},
 				}}
+				// Disabled because a lot of props may pass down the tree
+				// eslint-disable-next-line react/jsx-props-no-spreading
 				{...colorPickerProps}
 			/>
 		}
+		// Disabled because a lot of props may pass down the tree
+		// eslint-disable-next-line react/jsx-props-no-spreading
 		{...otherProps}
 	>
 		<Button style={{ padding: '4px', width, height }}>

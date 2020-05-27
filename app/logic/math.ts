@@ -4,6 +4,8 @@
  *
  * @param values The values.
  */
+// Disabled because it's only summing up numbers
+// eslint-disable-next-line unicorn/no-reduce
 export const mean = (...values: number[]) => values.reduce((a, b) => a + b, 0) / values.length;
 
 /**
@@ -12,6 +14,8 @@ export const mean = (...values: number[]) => values.reduce((a, b) => a + b, 0) /
  *
  * @param values The weighted values.
  */
+// Disabled because it's only summing up numbers
+// eslint-disable-next-line unicorn/no-reduce
 export const weightedMean = (...values: number[]) => values.reduce((a, b) => a + b, 0) / (values.length * 100);
 
 /**

@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react';
 import { Typography, notification } from 'antd';
 import { Bar, BarChart, CartesianGrid, Tooltip, TooltipProps, XAxis, YAxis } from 'recharts';
 
-import { MESSAGES } from 'app/logic/constants';
 import { getCanvasImage } from 'app/logic/helpers';
 import { HistogramValue, histogram } from 'app/logic/algorithms';
 
@@ -36,7 +35,6 @@ const CustomTooltip = ({ active, label, payload }: TooltipProps) => {
 		);
 	}
 
-	// eslint-disable-next-line unicorn/no-null
 	return null;
 };
 
@@ -51,7 +49,10 @@ export default ({ canvasRef }: Props) => {
 		const { current: canvas } = canvasRef;
 
 		if (!canvas) {
-			notification.error({ message: MESSAGES.INTERNAL_ERROR });
+			notification.error({
+				message:
+					'Desculpe, ocorreu um erro interno, reinicie a aplicação e tente novamente. Caso o erro persista abra um issue na página do repositório.',
+			});
 			return;
 		}
 
@@ -63,17 +64,11 @@ export default ({ canvasRef }: Props) => {
 	return (
 		<BarChart width={552} height={190} data={histogramData} barCategoryGap={0} barGap={0}>
 			<CartesianGrid strokeDasharray="3 3" />
-
 			<XAxis dataKey={(item) => histogramData.indexOf(item)} ticks={[0, 33, 63, 95, 127, 159, 191, 223, 255]} />
-
 			<YAxis tickFormatter={(value) => (value as number).toLocaleString()} />
-
 			<Tooltip content={<CustomTooltip />} />
-
 			<Bar name="red" dataKey="r" stackId="count" fill="#ff5c57" />
-
 			<Bar name="green" dataKey="g" stackId="count" fill="#5af78e" />
-
 			<Bar name="blue" dataKey="b" stackId="count" fill="#57c7ff" />
 		</BarChart>
 	);

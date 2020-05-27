@@ -38,6 +38,8 @@ export default ({
 			formatter={formatter}
 			parser={parser}
 			style={{ width: '100%' }}
+			// Disabled because a lot of props may pass down the tree
+			// eslint-disable-next-line react/jsx-props-no-spreading
 			{...otherProps}
 		/>
 	);

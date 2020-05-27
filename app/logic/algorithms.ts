@@ -1,6 +1,6 @@
 import { mean, median, weightedMean } from 'app/logic/math';
 import { cloneImageData, indexOfPixel } from 'app/logic/helpers';
-import { RGBAColor } from 'app/logic/types';
+import { RGBAColor } from 'app/typing/common';
 
 /**
  * Draws a border in the selected area of an the image and returns it.
@@ -361,18 +361,19 @@ export const histogram = (imageData: ImageData) => {
  *
  * @param histo The histogram.
  */
-export const accumulateHistogram = (histo: HistogramValue[]) =>
-	histo.reduce((accHisto, { r, g, b, a }, index) => {
-		const { r: accR, g: accG, b: accB, a: accA } = index !== 0 ? accHisto[index - 1] : { r: 0, g: 0, b: 0, a: 0 };
-		accHisto.push({
-			r: r + accR,
-			g: g + accG,
-			b: b + accB,
-			a: a + accA,
-		});
+export const accumulateHistogram = (histo: HistogramValue[]) => {
+	const accumulatedHistogram: HistogramValue[] = [...histo];
 
-		return accHisto;
-	}, [] as HistogramValue[]);
+	accumulatedHistogram.slice(1).forEach((histoValue, index) => {
+		const { r, g, b, a } = accumulatedHistogram[index];
+		histoValue.r += r;
+		histoValue.g += g;
+		histoValue.b += b;
+		histoValue.a += a;
+	});
+
+	return accumulatedHistogram;
+};
 
 /**
  * Returns an equalizated image.
@@ -389,27 +390,27 @@ export const equalization = (imageData: ImageData, onlyValidPixels: boolean) => 
 
 	const accumulatedHisto = accumulateHistogram(histo);
 
-	const histoShadesCount = onlyValidPixels
-		? histo.reduce(
-				(shadesCount, { r, g, b, a }) => {
-					if (r !== 0) {
-						shadesCount.r += 1;
-					}
-					if (g !== 0) {
-						shadesCount.g += 1;
-					}
-					if (b !== 0) {
-						shadesCount.b += 1;
-					}
-					if (a !== 0) {
-						shadesCount.a += 1;
-					}
+	let histoShadesCount;
+	if (onlyValidPixels) {
+		histoShadesCount = { r: 0, g: 0, b: 0, a: 0 };
 
-					return shadesCount;
-				},
-				{ r: 0, g: 0, b: 0, a: 0 }
-		  )
-		: { r: 256, g: 256, b: 256, a: 256 };
+		histo.forEach(({ r, g, b, a }) => {
+			if (r !== 0) {
+				histoShadesCount.r += 1;
+			}
+			if (g !== 0) {
+				histoShadesCount.g += 1;
+			}
+			if (b !== 0) {
+				histoShadesCount.b += 1;
+			}
+			if (a !== 0) {
+				histoShadesCount.a += 1;
+			}
+		});
+	} else {
+		histoShadesCount = { r: 256, g: 256, b: 256, a: 256 };
+	}
 
 	const histoMinPoint = onlyValidPixels
 		? {

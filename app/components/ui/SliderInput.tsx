@@ -40,6 +40,8 @@ export default ({
 					}
 				}}
 				tooltipVisible={false}
+				// Disabled because a lot of props may pass down the tree
+				// eslint-disable-next-line react/jsx-props-no-spreading
 				{...sliderProps}
 			/>
 		</Col>
@@ -52,6 +54,8 @@ export default ({
 				valuePrefix={valuePrefix}
 				valueSuffix={valueSuffix}
 				onChange={onChange}
+				// Disabled because a lot of props may pass down the tree
+				// eslint-disable-next-line react/jsx-props-no-spreading
 				{...inputProps}
 			/>
 		</Col>
