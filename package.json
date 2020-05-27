@@ -9,6 +9,7 @@
 	"scripts": {
 		"clean": "node scripts/clean.js",
 		"start": "node scripts/start.js",
+		"build": "node scripts/build.js",
 		"dist": "node scripts/dist.js",
 		"type": "tsc -p app --noEmit"
 	},
@@ -16,6 +17,7 @@
 		"@ant-design/icons": "^4.1.0",
 		"@types/chalk": "^2.2.0",
 		"@types/copy-webpack-plugin": "^5.0.1",
+		"@types/electron-packager": "14.0.0",
 		"@types/mini-css-extract-plugin": "^0.9.1",
 		"@types/node": "^14.0.5",
 		"@types/optimize-css-assets-webpack-plugin": "^5.0.1",
@@ -32,7 +34,7 @@
 		"copy-webpack-plugin": "^6.0.1",
 		"css-loader": "^3.5.3",
 		"electron": "^9.0.0",
-		"electron-builder": "^22.7.0",
+		"electron-packager": "^14.2.1",
 		"eslint": "^7.1.0",
 		"eslint-config-airbnb": "^18.1.0",
 		"eslint-config-prettier": "^6.11.0",
@@ -63,18 +65,5 @@
 		"ts-loader": "^7.0.5",
 		"typescript": "^3.9.3",
 		"webpack": "^4.43.0"
-	},
-	"build": {
-		"appId": "io.github.azganoth.${name}",
-		"artifactName": "${name}-${version}-${os}.${ext}",
-		"icon": "app/media/icon.png",
-		"win": {
-			"target": "portable",
-			"icon": "app/media/icon.ico"
-		},
-		"files": [
-			"public",
-			"main.js"
-		]
 	}
 }

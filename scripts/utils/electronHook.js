@@ -1,6 +1,8 @@
 const electron = require('electron');
 
-// reloads all electron windows
+/**
+ * Reloads all opened electron windows.
+ */
 const reload = () => {
 	electron.BrowserWindow.getAllWindows().forEach((win) => {
 		win.webContents.reloadIgnoringCache();

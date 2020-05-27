@@ -1,3 +1,4 @@
+const { cyan } = require('chalk');
 const path = require('path');
 const { promises: fs } = require('fs');
 
@@ -6,12 +7,14 @@ process.on('unhandledRejection', (error) => {
 	throw error;
 });
 
-const OUTPUT_FOLDERS = ['public', 'dist'];
+const OUTPUT_DIRS = ['public', 'dist'];
 
 (async () => {
+	console.info('🧹', cyan(`Deleting output directories (${OUTPUT_DIRS.join(', ')})`));
+
 	await Promise.all(
-		OUTPUT_FOLDERS.map(async (dirName) => {
-			await fs.rmdir(path.resolve(__dirname, '..', dirName), { recursive: true });
+		OUTPUT_DIRS.map(async (dirName) => {
+			await fs.rmdir(path.resolve(__dirname, `../${dirName}`), { recursive: true });
 		})
 	);
 })();

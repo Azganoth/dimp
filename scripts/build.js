@@ -1,6 +1,5 @@
-const packager = require('electron-packager');
 const webpack = require('webpack');
-const { blue, bold, green, red, white, yellow } = require('chalk');
+const { bold, green, red, white, yellow } = require('chalk');
 const path = require('path');
 const { promisify } = require('util');
 const { promises: fs } = require('fs');
@@ -16,9 +15,8 @@ process.env.NODE_ENV = 'production';
 
 (async () => {
 	await fs.rmdir(path.resolve(__dirname, '../public'), { recursive: true });
-	await fs.rmdir(path.resolve(__dirname, '../dist'), { recursive: true });
 
-	console.info('⚙️', blue('Creating a production build'));
+	console.info('⚙️', yellow('Creating a production build'));
 
 	try {
 		// compile a production build
@@ -40,30 +38,7 @@ process.env.NODE_ENV = 'production';
 			console.warn(stats.toString({ all: false, warnings: true }));
 			console.info(yellow(`Build failed to compile with warnings at ${white(localizedBuiltAt)}.`));
 		} else {
-			console.info(`${green(`Build successfully compiled in ${bold(buildTime)} at ${white(localizedBuiltAt)}`)}\n`);
-
-			// create distribution packages
-			await packager({
-				dir: path.resolve(__dirname, '..'),
-				out: path.resolve(__dirname, '../dist'),
-				platform: ['darwin', 'linux', 'win32'],
-				arch: 'all',
-				icon: path.resolve(__dirname, '../public/media/icon'),
-				afterCopy: [
-					// cleanup package json
-					async (buildPath, electronVersion, platform, arch, callback) => {
-						const packageJson = JSON.parse(await fs.readFile(path.resolve(buildPath, 'package.json'), 'utf8'));
-
-						delete packageJson.scripts;
-						delete packageJson.devDependencies;
-
-						await fs.writeFile(path.join(buildPath, 'package.json'), JSON.stringify(packageJson, null, 2));
-
-						callback();
-					},
-				],
-				ignore: /^((?!\/package\.json|\/main\.js|\/public).)+/,
-			});
+			console.info(green(`Build successfully compiled in ${bold(buildTime)} at ${white(localizedBuiltAt)}.`));
 		}
 	} catch (error) {
 		console.info('The compiler encountered an error.');
