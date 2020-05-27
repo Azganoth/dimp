@@ -32,7 +32,10 @@ export default ({
 	return (
 		<InputNumber
 			value={value}
-			onChange={(val) => onChange(val ?? min)}
+			onChange={(val) => {
+				const num = typeof val === 'number' ? val : Number.parseInt(String(val), 10);
+				onChange(Number.isNaN(num) ? min : num);
+			}}
 			min={min}
 			max={max}
 			formatter={formatter}

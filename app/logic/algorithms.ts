@@ -390,7 +390,7 @@ export const equalization = (imageData: ImageData, onlyValidPixels: boolean) => 
 
 	const accumulatedHisto = accumulateHistogram(histo);
 
-	let histoShadesCount;
+	let histoShadesCount: HistogramValue;
 	if (onlyValidPixels) {
 		histoShadesCount = { r: 0, g: 0, b: 0, a: 0 };
 
