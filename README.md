@@ -1,21 +1,26 @@
 <p align="center">
   <img src="/app/media/icon.png" alt="dimp" />
-  <h1 align="center">DIMP</h1>
-
-  <h1 align="center">
-		<a href="https://github.com/Azganoth/dimp/releases">Download</a>
-	</h1>
 </p>
+
+<h1 align="center">DIMP</h1>
+
+<div align="center">
 
 App for Digital Image Processing algorithms testing. 🧪
 
+<a href="https://github.com/Azganoth/dimp/releases">Download</a>
+
+</div>
+
 ## Scripts
+
+`yarn clean` to delete output directories
 
 `yarn start` to start the development server
 
-`yarn dist` to create distribution builds
+`yarn build` to create a production build
 
-`yarn clean` to delete build folders
+`yarn dist` to create a production build and distribution packages
 
 `yarn type` to check for type errors
 
