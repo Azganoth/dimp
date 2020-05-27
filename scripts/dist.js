@@ -1,4 +1,5 @@
 const packager = require('electron-packager');
+const { rebuild } = require('electron-rebuild');
 const webpack = require('webpack');
 const { blue, bold, green, red, white, yellow } = require('chalk');
 const path = require('path');
@@ -58,6 +59,12 @@ process.env.NODE_ENV = 'production';
 						delete packageJson.devDependencies;
 
 						await fs.writeFile(path.join(buildPath, 'package.json'), JSON.stringify(packageJson, null, 2));
+
+						callback();
+					},
+					// rebuild native node modules
+					async (buildPath, electronVersion, platform, arch, callback) => {
+						await rebuild({ buildPath, electronVersion, arch });
 
 						callback();
 					},
