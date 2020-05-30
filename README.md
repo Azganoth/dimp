@@ -12,7 +12,7 @@ App for Digital Image Processing algorithms testing. 🧪
 
 </div>
 
-## Scripts
+## ⚙️ Scripts
 
 `yarn clean` to delete output directories
 
@@ -24,7 +24,7 @@ App for Digital Image Processing algorithms testing. 🧪
 
 `yarn type` to check for type errors
 
-## Screenshots
+## 🖼️ Screenshots
 
 ### Interface
 
@@ -86,6 +86,6 @@ App for Digital Image Processing algorithms testing. 🧪
 
 ![Challenge (Border Drawing)](/screenshots/dimp-challenge-border-marking.png)
 
-## License
+## 🔑 License
 
 This project is under a [MIT license](/LICENSE).
