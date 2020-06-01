@@ -2,7 +2,10 @@ import React from 'react';
 import { InputNumber } from 'antd';
 import { InputNumberProps } from 'antd/lib/input-number';
 
-type Props = Omit<InputNumberProps, 'value' | 'onChange' | 'min' | 'max' | 'formatter' | 'parser'> & {
+type InputNumberFormattedProps = Omit<
+	InputNumberProps,
+	'value' | 'onChange' | 'min' | 'max' | 'formatter' | 'parser'
+> & {
 	value: number;
 	onChange: (value: number) => void;
 	min?: number;
@@ -11,7 +14,7 @@ type Props = Omit<InputNumberProps, 'value' | 'onChange' | 'min' | 'max' | 'form
 	valueSuffix?: string;
 };
 
-export default ({
+const InputNumberFormatted: React.FunctionComponent<InputNumberFormattedProps> = ({
 	value,
 	onChange,
 	min = -Infinity,
@@ -19,7 +22,7 @@ export default ({
 	valuePrefix = '',
 	valueSuffix = '',
 	...otherProps
-}: Props) => {
+}: InputNumberFormattedProps) => {
 	const formatter = (val: string | number | undefined) => {
 		return `${valuePrefix}${val ?? min}${valueSuffix}`;
 	};
@@ -47,3 +50,5 @@ export default ({
 		/>
 	);
 };
+
+export default InputNumberFormatted;

@@ -14,9 +14,9 @@ process.on('unhandledRejection', (error) => {
 process.env.NODE_ENV = 'production';
 
 (async () => {
-	await fs.rmdir(path.resolve(__dirname, '../public'), { recursive: true });
-
 	console.info('⚙️', yellow('Creating a production build'));
+
+	await fs.rmdir(path.resolve(__dirname, '../build'), { recursive: true });
 
 	try {
 		// compile a production build
@@ -36,7 +36,7 @@ process.env.NODE_ENV = 'production';
 			console.info(red(`Build failed to compile at ${white(localizedBuiltAt)}.`));
 		} else if (stats.hasWarnings()) {
 			console.warn(stats.toString({ all: false, warnings: true }));
-			console.info(yellow(`Build failed to compile with warnings at ${white(localizedBuiltAt)}.`));
+			console.info(red(`Build failed to compile ${yellow('with warnings')} at ${white(localizedBuiltAt)}.`));
 		} else {
 			console.info(green(`Build successfully compiled in ${bold(buildTime)} at ${white(localizedBuiltAt)}.`));
 		}

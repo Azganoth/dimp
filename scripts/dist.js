@@ -1,5 +1,6 @@
 const packager = require('electron-packager');
 const { rebuild } = require('electron-rebuild');
+const { exec } = require('child_process');
 const webpack = require('webpack');
 const { blue, bold, green, red, white, yellow } = require('chalk');
 const path = require('path');
@@ -16,10 +17,10 @@ process.on('unhandledRejection', (error) => {
 process.env.NODE_ENV = 'production';
 
 (async () => {
-	await fs.rmdir(path.resolve(__dirname, '../public'), { recursive: true });
-	await fs.rmdir(path.resolve(__dirname, '../dist'), { recursive: true });
-
 	console.info('⚙️', blue('Creating a production build'));
+
+	await fs.rmdir(path.resolve(__dirname, '../build'), { recursive: true });
+	await fs.rmdir(path.resolve(__dirname, '../dist'), { recursive: true });
 
 	try {
 		// compile a production build
@@ -39,7 +40,7 @@ process.env.NODE_ENV = 'production';
 			console.info(red(`Build failed to compile at ${white(localizedBuiltAt)}.`));
 		} else if (stats.hasWarnings()) {
 			console.warn(stats.toString({ all: false, warnings: true }));
-			console.info(yellow(`Build failed to compile with warnings at ${white(localizedBuiltAt)}.`));
+			console.info(red(`Build failed to compile ${yellow('with warnings')} at ${white(localizedBuiltAt)}.`));
 		} else {
 			console.info(`${green(`Build successfully compiled in ${bold(buildTime)} at ${white(localizedBuiltAt)}`)}\n`);
 
@@ -49,7 +50,7 @@ process.env.NODE_ENV = 'production';
 				out: path.resolve(__dirname, '../dist'),
 				platform: ['darwin', 'linux', 'win32'],
 				arch: 'all',
-				icon: path.resolve(__dirname, '../public/media/icon'),
+				icon: path.resolve(__dirname, '../build/media/icon'),
 				afterCopy: [
 					// cleanup package json
 					async (buildPath, electronVersion, platform, arch, callback) => {
@@ -62,6 +63,12 @@ process.env.NODE_ENV = 'production';
 
 						callback();
 					},
+					// install dependencies
+					async (buildPath, electronVersion, platform, arch, callback) => {
+						await promisify(exec)('npm install', { cwd: buildPath });
+
+						callback();
+					},
 					// rebuild native node modules
 					async (buildPath, electronVersion, platform, arch, callback) => {
 						await rebuild({ buildPath, electronVersion, arch });
@@ -69,7 +76,7 @@ process.env.NODE_ENV = 'production';
 						callback();
 					},
 				],
-				ignore: /^((?!\/package\.json|\/main\.js|\/public).)+/,
+				ignore: /^((?!\/package\.json|\/main\.js|\/build).)+/,
 			});
 		}
 	} catch (error) {

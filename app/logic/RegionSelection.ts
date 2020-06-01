@@ -41,7 +41,7 @@ export default class RegionSelection {
 	 * @param endX The ending point x-coordinate.
 	 * @param endY The ending point y-coordinate.
 	 */
-	updateEndPoint(endX: number, endY: number) {
+	updateEndPoint(endX: number, endY: number): void {
 		this.endX = endX;
 		this.endY = endY;
 	}

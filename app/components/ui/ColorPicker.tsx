@@ -5,7 +5,7 @@ import { ChromePicker, ChromePickerProps } from 'react-color';
 
 import { RGBAColor } from 'app/typing/common';
 
-type Props = Omit<PopoverProps, 'content'> & {
+type ColorPickerProps = Omit<PopoverProps, 'content'> & {
 	value: RGBAColor;
 	onChange: (value: RGBAColor) => void;
 	width?: string;
@@ -13,7 +13,14 @@ type Props = Omit<PopoverProps, 'content'> & {
 	colorPickerProps: Omit<ChromePickerProps, 'color' | 'onChange' | 'onChangeComplete'>;
 };
 
-export default ({ value, onChange, width = '48px', height = '24px', colorPickerProps, ...otherProps }: Props) => (
+const ColorPicker: React.FunctionComponent<ColorPickerProps> = ({
+	value,
+	onChange,
+	width = '48px',
+	height = '24px',
+	colorPickerProps,
+	...otherProps
+}: ColorPickerProps) => (
 	<Popover
 		placement="bottom"
 		trigger="click"
@@ -47,3 +54,5 @@ export default ({ value, onChange, width = '48px', height = '24px', colorPickerP
 		</Button>
 	</Popover>
 );
+
+export default ColorPicker;

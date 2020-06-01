@@ -5,7 +5,7 @@ import { SliderProps } from 'antd/lib/slider';
 
 import InputNumberFormatted from 'app/components/ui/InputNumberFormatted';
 
-type Props = {
+type SliderInputProps = {
 	sliderProps: Omit<SliderProps, 'value' | 'onChange' | 'min' | 'max'>;
 	inputProps: Omit<InputNumberProps, 'value' | 'onChange' | 'min' | 'max' | 'formatter' | 'parser'>;
 	value: number;
@@ -17,7 +17,7 @@ type Props = {
 	inputSpan?: number;
 };
 
-export default ({
+const SliderInput: React.FunctionComponent<SliderInputProps> = ({
 	sliderProps,
 	inputProps,
 	value,
@@ -27,7 +27,7 @@ export default ({
 	valuePrefix = '',
 	valueSuffix = '',
 	inputSpan = 7,
-}: Props) => (
+}: SliderInputProps) => (
 	<Row gutter={24} align="middle">
 		<Col flex="auto">
 			<Slider
@@ -61,3 +61,5 @@ export default ({
 		</Col>
 	</Row>
 );
+
+export default SliderInput;

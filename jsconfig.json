@@ -6,5 +6,5 @@
 		"strict": true,
 		"forceConsistentCasingInFileNames": true
 	},
-	"exclude": ["app", "public", "dist"]
+	"exclude": ["app", "build", "dist"]
 }

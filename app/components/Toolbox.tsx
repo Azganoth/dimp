@@ -28,7 +28,7 @@ const SUPPORTED_IMAGE_TYPES = [
 	{ name: 'Imagem TIFF', extensions: ['tif', 'tiff'] },
 ];
 
-type Props = {
+type ToolboxProps = {
 	forceUpdate: React.DispatchWithoutAction;
 	canvas1Ref: React.MutableRefObject<HTMLCanvasElement | null>;
 	canvas2Ref: React.MutableRefObject<HTMLCanvasElement | null>;
@@ -39,14 +39,14 @@ type Props = {
 	) => void;
 };
 
-export default ({
+const Toolbox: React.FunctionComponent<ToolboxProps> = ({
 	forceUpdate,
 	canvas1Ref,
 	canvas2Ref,
 	canvas3Ref,
 	challengesOptions,
 	updateChallengesOptions,
-}: Props) => {
+}: ToolboxProps) => {
 	const [targetCanvasRef, setTargetCanvasRef] = useState(canvas1Ref);
 
 	const load = async () => {
@@ -58,7 +58,7 @@ export default ({
 		}
 
 		const { canceled, filePaths } = await remote.dialog.showOpenDialog({
-			title: `Selecione uma imagem para o ${canvas.dataset.title!}`,
+			title: `Selecione uma imagem para o ${canvas.dataset.title ?? ''}`,
 			buttonLabel: 'Selecionar',
 			filters: [
 				{
@@ -87,12 +87,14 @@ export default ({
 		image.addEventListener('load', () => {
 			canvas.width = image.width;
 			canvas.height = image.height;
+			// Disabled because the return is guaranteed
+			// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 			canvas.getContext('2d')!.drawImage(image, 0, 0);
 
 			forceUpdate();
 
 			notification.success({
-				message: `A imagem '${path.basename(filePath)}' foi adicionada com sucesso ao ${canvas.dataset.title!}.`,
+				message: `A imagem '${path.basename(filePath)}' foi adicionada com sucesso ao ${canvas.dataset.title ?? ''}.`,
 			});
 		});
 
@@ -112,7 +114,7 @@ export default ({
 		}
 
 		if (!canvas.width || !canvas.height) {
-			notification.info({ message: MESSAGES.empty(canvas.dataset.title!) });
+			notification.info({ message: MESSAGES.empty(canvas.dataset.title ?? '') });
 			return;
 		}
 
@@ -123,7 +125,7 @@ export default ({
 
 		forceUpdate();
 
-		notification.success({ message: `Imagem retirada do ${canvas.dataset.title!}.` });
+		notification.success({ message: `Imagem retirada do ${canvas.dataset.title ?? ''}.` });
 	};
 
 	const download = async () => {
@@ -135,12 +137,12 @@ export default ({
 		}
 
 		if (!canvas.width || !canvas.height) {
-			notification.info({ message: MESSAGES.empty(canvas.dataset.title!) });
+			notification.info({ message: MESSAGES.empty(canvas.dataset.title ?? '') });
 			return;
 		}
 
 		const { canceled, filePath } = await remote.dialog.showSaveDialog({
-			title: `Escolha um local e um nome para a imagem do ${canvas.dataset.title!}`,
+			title: `Escolha um local e um nome para a imagem do ${canvas.dataset.title ?? ''}`,
 			filters: SUPPORTED_IMAGE_TYPES,
 		});
 
@@ -176,7 +178,7 @@ export default ({
 
 		await fs.writeFile(filePath, Buffer.from(imageBase64, 'base64'));
 
-		notification.success({ message: `A imagem do ${canvas.dataset.title!} foi salva com sucesso.` });
+		notification.success({ message: `A imagem do ${canvas.dataset.title ?? ''} foi salva com sucesso.` });
 	};
 
 	// NEGATIVE
@@ -191,7 +193,7 @@ export default ({
 		}
 
 		if (!canvas.width || !canvas.height) {
-			notification.info({ message: MESSAGES.empty(canvas.dataset.title!) });
+			notification.info({ message: MESSAGES.empty(canvas.dataset.title ?? '') });
 			return;
 		}
 
@@ -214,7 +216,7 @@ export default ({
 		}
 
 		if (!canvas.width || !canvas.height) {
-			notification.info({ message: MESSAGES.empty(canvas.dataset.title!) });
+			notification.info({ message: MESSAGES.empty(canvas.dataset.title ?? '') });
 			return;
 		}
 
@@ -239,7 +241,7 @@ export default ({
 		}
 
 		if (!canvas.width || !canvas.height) {
-			notification.info({ message: MESSAGES.empty(canvas.dataset.title!) });
+			notification.info({ message: MESSAGES.empty(canvas.dataset.title ?? '') });
 			return;
 		}
 
@@ -268,7 +270,7 @@ export default ({
 		}
 
 		if (!canvas.width || !canvas.height) {
-			notification.info({ message: MESSAGES.empty(canvas.dataset.title!) });
+			notification.info({ message: MESSAGES.empty(canvas.dataset.title ?? '') });
 			return;
 		}
 
@@ -293,12 +295,12 @@ export default ({
 		}
 
 		if (!canvas1.width || !canvas1.height) {
-			notification.info({ message: MESSAGES.empty(canvas1.dataset.title!) });
+			notification.info({ message: MESSAGES.empty(canvas1.dataset.title ?? '') });
 			return;
 		}
 
 		if (!canvas2.width || !canvas2.height) {
-			notification.info({ message: MESSAGES.empty(canvas2.dataset.title!) });
+			notification.info({ message: MESSAGES.empty(canvas2.dataset.title ?? '') });
 			return;
 		}
 
@@ -321,12 +323,12 @@ export default ({
 		}
 
 		if (!canvas1.width || !canvas1.height) {
-			notification.info({ message: MESSAGES.empty(canvas1.dataset.title!) });
+			notification.info({ message: MESSAGES.empty(canvas1.dataset.title ?? '') });
 			return;
 		}
 
 		if (!canvas2.width || !canvas2.height) {
-			notification.info({ message: MESSAGES.empty(canvas2.dataset.title!) });
+			notification.info({ message: MESSAGES.empty(canvas2.dataset.title ?? '') });
 			return;
 		}
 
@@ -350,7 +352,7 @@ export default ({
 		}
 
 		if (!canvas.width || !canvas.height) {
-			notification.info({ message: MESSAGES.empty(canvas.dataset.title!) });
+			notification.info({ message: MESSAGES.empty(canvas.dataset.title ?? '') });
 			return;
 		}
 
@@ -737,3 +739,5 @@ export default ({
 		</Layout>
 	);
 };
+
+export default Toolbox;

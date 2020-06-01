@@ -55,5 +55,5 @@ coverage
 .DS_Store
 
 # Project output
+build
 dist
-public

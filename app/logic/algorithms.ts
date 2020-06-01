@@ -19,7 +19,7 @@ export const drawBorder = (
 	endX: number,
 	endY: number,
 	options: { borderColor?: RGBAColor; borderWidth?: number } = {}
-) => {
+): ImageData => {
 	const newImageData = cloneImageData(imageData);
 
 	const { data, width } = newImageData;
@@ -69,7 +69,7 @@ export const drawBorder = (
  * @param imageData The image data.
  * @param weight The weight of each color channel.
  */
-export const greyscale = (imageData: ImageData, weight?: { r: number; g: number; b: number }) => {
+export const greyscale = (imageData: ImageData, weight?: { r: number; g: number; b: number }): ImageData => {
 	const newImageData = cloneImageData(imageData);
 
 	const { data } = newImageData;
@@ -105,7 +105,7 @@ export const greyscale = (imageData: ImageData, weight?: { r: number; g: number;
  * @param imageData The image data.
  * @param threshold The threshold value.
  */
-export const thresh = (imageData: ImageData, threshold: number) => {
+export const thresh = (imageData: ImageData, threshold: number): ImageData => {
 	const newImageData = cloneImageData(imageData);
 
 	const { data } = newImageData;
@@ -129,7 +129,7 @@ export const thresh = (imageData: ImageData, threshold: number) => {
  *
  * @param imageData The image data.
  */
-export const negative = (imageData: ImageData) => {
+export const negative = (imageData: ImageData): ImageData => {
 	const newImageData = cloneImageData(imageData);
 
 	const { data } = newImageData;
@@ -151,7 +151,7 @@ export const negative = (imageData: ImageData) => {
  * @param imageData The image data.
  * @param removalType The removal type. `cross` to use only direct neighbors; `x` to use only dialognal neighbors; `3x3` to use all neighbors.
  */
-export const removeNoise = (imageData: ImageData, removalType: 'cross' | 'x' | '3x3') => {
+export const removeNoise = (imageData: ImageData, removalType: 'cross' | 'x' | '3x3'): ImageData => {
 	const newImageData = cloneImageData(imageData);
 
 	const { data, width, height } = newImageData;
@@ -250,7 +250,7 @@ export const sum = (
 	imageData2: ImageData,
 	image1Percentage: number,
 	image2Percentage: number
-) => {
+): ImageData => {
 	const { data: dataImage1, width: widthImage1 } = imageData1;
 	const { data: dataImage2, width: widthImage2 } = imageData2;
 
@@ -295,7 +295,7 @@ export const sub = (
 	imageData2: ImageData,
 	image1Percentage: number,
 	image2Percentage: number
-) => {
+): ImageData => {
 	const { data: dataImage1, width: widthImage1 } = imageData1;
 	const { data: dataImage2, width: widthImage2 } = imageData2;
 
@@ -339,7 +339,7 @@ export type HistogramValue = {
  *
  * @param imageData The image data.
  */
-export const histogram = (imageData: ImageData) => {
+export const histogram = (imageData: ImageData): HistogramValue[] => {
 	// each index will store how many pixels in the image contains the index value as a channel value
 	const histo: HistogramValue[] = Array.from({ length: 256 }, () => ({ r: 0, g: 0, b: 0, a: 0 }));
 
@@ -361,7 +361,7 @@ export const histogram = (imageData: ImageData) => {
  *
  * @param histo The histogram.
  */
-export const accumulateHistogram = (histo: HistogramValue[]) => {
+export const accumulateHistogram = (histo: HistogramValue[]): HistogramValue[] => {
 	const accumulatedHistogram: HistogramValue[] = [...histo];
 
 	accumulatedHistogram.slice(1).forEach((histoValue, index) => {
@@ -381,7 +381,7 @@ export const accumulateHistogram = (histo: HistogramValue[]) => {
  * @param imageData The image data.
  * @param onlyValidPixels `true` if only the valid pixels (not black) will be considered, `false` otherwise.
  */
-export const equalization = (imageData: ImageData, onlyValidPixels: boolean) => {
+export const equalization = (imageData: ImageData, onlyValidPixels: boolean): ImageData => {
 	const newImageData = cloneImageData(imageData);
 
 	const { data } = newImageData;

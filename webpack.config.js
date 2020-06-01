@@ -1,6 +1,7 @@
 const { ContextReplacementPlugin } = require('webpack');
 const path = require('path');
 
+const nodeExternals = require('webpack-node-externals');
 const CopyPlugin = require('copy-webpack-plugin');
 const HtmlPlugin = require('html-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
@@ -26,12 +27,20 @@ module.exports = (webpackEnv) => {
 
 		target: 'electron-renderer',
 
+		externals: [
+			nodeExternals({
+				modulesFromFile: {
+					include: ['dependencies'],
+				},
+			}),
+		],
+
 		context: path.join(__dirname, 'app'),
 
 		entry: './index.tsx',
 
 		output: {
-			path: path.join(__dirname, 'public'),
+			path: path.join(__dirname, 'build'),
 			filename: 'js/[name].bundle.js',
 			chunkFilename: 'js/[name].chunk.js',
 		},
@@ -47,6 +56,7 @@ module.exports = (webpackEnv) => {
 						},
 					},
 					extractComments: {
+						condition: true,
 						filename: '[file].LICENSE',
 					},
 				}),
@@ -77,7 +87,7 @@ module.exports = (webpackEnv) => {
 		},
 
 		plugins: [
-			new ContextReplacementPlugin(/moment[/\\]locale$/, /en/),
+			new ContextReplacementPlugin(/moment[/\\]locale$/, /en|pt-br/),
 			new CopyPlugin({
 				patterns: [
 					{
@@ -154,7 +164,7 @@ module.exports = (webpackEnv) => {
 		},
 
 		resolve: {
-			extensions: ['.js', '.jsx', '.ts', '.tsx'],
+			extensions: ['.js', '.jsx', '.ts', '.tsx', '.html', '.json'],
 			alias: {
 				app: path.resolve(__dirname, 'app'),
 			},

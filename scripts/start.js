@@ -15,19 +15,35 @@ process.on('unhandledRejection', (error) => {
 process.env.NODE_ENV = 'development';
 
 (async () => {
-	await fs.rmdir(path.resolve(__dirname, '../public'), { recursive: true });
-
 	console.info('🚀', magenta('Starting development server'));
+
+	let app;
+	let lastHash;
+	let watcher;
+
+	// cleanup process on terminate signals
+	['SIGINT', 'SIGTERM'].forEach((sig) => {
+		process.on(sig, () => {
+			if (app && !app.killed) {
+				app.kill(sig);
+			}
+			if (watcher) {
+				watcher.close();
+			}
+			// Disabled because the script needs to exit without an error
+			// eslint-disable-next-line no-process-exit
+			process.exit(0);
+		});
+	});
+
+	await fs.rmdir(path.resolve(__dirname, '../build'), { recursive: true });
 
 	try {
 		// Disabled because the watcher needs to be kept alive
 		// eslint-disable-next-line promise/avoid-new
 		await new Promise((resolve, reject) => {
-			let app;
-			let lastHash;
-
 			// compile a development build and watch for changes
-			const watcher = webpack(webpackConfig(process.env.NODE_ENV)).watch({}, (error, stats) => {
+			watcher = webpack(webpackConfig(process.env.NODE_ENV)).watch({}, (error, stats) => {
 				if (error) {
 					reject(error);
 				}
@@ -68,24 +84,13 @@ process.env.NODE_ENV = 'development';
 				} else {
 					// start the electron app
 					app = spawn(electron, ['--require', path.resolve(__dirname, 'utils/electronHook.js'), '.'], {
-						stdio: ['ignore', 'ignore', 'ignore', 'ipc'],
+						stdio: ['inherit', 'inherit', 'inherit', 'ipc'],
 					});
 
 					app.once('close', () => {
 						app = undefined;
 					});
 				}
-			});
-
-			// cleanup process on terminate signals
-			['SIGINT', 'SIGTERM'].forEach((sig) => {
-				process.on(sig, () => {
-					if (app && !app.killed) {
-						app.kill(sig);
-					}
-					watcher.close();
-					resolve();
-				});
 			});
 		});
 	} catch (error) {

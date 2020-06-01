@@ -3,5 +3,5 @@
 yarn.lock
 
 # Project output
+build
 dist
-public

@@ -38,11 +38,11 @@ const CustomTooltip = ({ active, label, payload }: TooltipProps) => {
 	return null;
 };
 
-type Props = {
+type HistogramProps = {
 	canvasRef: React.MutableRefObject<HTMLCanvasElement | null>;
 };
 
-export default ({ canvasRef }: Props) => {
+const Histogram: React.FunctionComponent<HistogramProps> = ({ canvasRef }: HistogramProps) => {
 	const [histogramData, setHistogramData] = useState<HistogramValue[]>([]);
 
 	useEffect(() => {
@@ -73,3 +73,5 @@ export default ({ canvasRef }: Props) => {
 		</BarChart>
 	);
 };
+
+export default Histogram;

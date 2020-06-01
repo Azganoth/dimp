@@ -19,7 +19,7 @@ notification.config({
 
 let regionSelection: RegionSelection | undefined;
 
-export default () => {
+const App: React.FunctionComponent = () => {
 	const [, forceUpdate] = useReducer((x) => x + 1, 0);
 
 	const [siderCollapsed, setSiderCollapsed] = useState(false);
@@ -77,6 +77,8 @@ export default () => {
 			return;
 		}
 
+		// Disabled because the return is guaranteed
+		// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 		const [r, g, b, a] = canvas.getContext('2d')!.getImageData(offsetX, offsetY, 1, 1).data;
 		updatePixelShowcase({ r, g, b, a });
 
@@ -355,3 +357,5 @@ export default () => {
 		</Layout>
 	);
 };
+
+export default App;

@@ -39,10 +39,10 @@ rules:
 
   import/extensions: [error, ignorePackages, { js: never, ts: never, jsx: never, tsx: never }]
 
-  # Disabled because the production dependencies will be bundled by webpack
+  # Disabled because dependencies used in production code are bundled
   import/no-extraneous-dependencies: off
 
-  # Disabled because it's too annoying
+  # Disabled because it's annoying
   import/prefer-default-export: off
 
   promise/avoid-new: error
@@ -63,25 +63,39 @@ rules:
   # Disabled because it's buggy (https://github.com/yannickcr/eslint-plugin-react/issues/1835)
   react/jsx-one-expression-per-line: off
 
+  # Disabled because it's too annoying
+  react/jsx-props-no-spreading: off
+
   prettier/prettier: warn
 
 overrides:
+  - files: app/**/*
+    extends:
+      - plugin:import/typescript
+      - plugin:@typescript-eslint/recommended
+      - prettier/@typescript-eslint
+    env:
+      browser: true
+    parser: '@typescript-eslint/parser'
+    parserOptions:
+      project: 'app/tsconfig.json'
+
   - files: scripts/**/*
     extends:
       - plugin:node/recommended
     rules:
-      # Disabled because they're frequently used in script code
+      # Disabled because it's script code
       no-console: 0
 
-      # Redundant with import/no-extraneous-dependencies
+      # Disabled because it's redundant with import/no-extraneous-dependencies
       node/no-extraneous-import: off
       node/no-extraneous-require: off
 
-      # Redundant with import/no-unresolved
+      # Disabled because it's redundant with import/no-unresolved
       node/no-missing-import: off
       node/no-missing-require: off
 
-      # Disabled because they're too annoying
+      # Disabled because it's too annoying
       node/no-unpublished-import: off
       node/no-unpublished-require: off
 
@@ -93,20 +107,3 @@ overrides:
 
       # Disabled as the rule doesn't exclude scripts executed with `node` but not referenced in 'bin'
       node/shebang: off
-
-  - files: app/**/*
-    extends:
-      - plugin:import/typescript
-      - plugin:@typescript-eslint/recommended
-      - prettier/@typescript-eslint
-    env:
-      browser: true
-    parser: '@typescript-eslint/parser'
-    parserOptions:
-      project: 'app/tsconfig.json'
-    rules:
-      # Disabled because writing void everywhere hurts readability
-      '@typescript-eslint/explicit-module-boundary-types': off
-
-      # Disabled because it'll be used carefully
-      '@typescript-eslint/no-non-null-assertion': off

@@ -7,7 +7,7 @@ process.on('unhandledRejection', (error) => {
 	throw error;
 });
 
-const OUTPUT_DIRS = ['public', 'dist'];
+const OUTPUT_DIRS = ['build', 'dist'];
 
 (async () => {
 	console.info('🧹', cyan(`Deleting output directories (${OUTPUT_DIRS.join(', ')})`));

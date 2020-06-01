@@ -6,7 +6,7 @@
  */
 // Disabled because it's only summing up numbers
 // eslint-disable-next-line unicorn/no-reduce
-export const mean = (...values: number[]) => values.reduce((a, b) => a + b, 0) / values.length;
+export const mean = (...values: number[]): number => values.reduce((a, b) => a + b, 0) / values.length;
 
 /**
  * Returns the weighted arithmetic mean of a list of values.
@@ -16,7 +16,7 @@ export const mean = (...values: number[]) => values.reduce((a, b) => a + b, 0) /
  */
 // Disabled because it's only summing up numbers
 // eslint-disable-next-line unicorn/no-reduce
-export const weightedMean = (...values: number[]) => values.reduce((a, b) => a + b, 0) / (values.length * 100);
+export const weightedMean = (...values: number[]): number => values.reduce((a, b) => a + b, 0) / (values.length * 100);
 
 /**
  * Returns the median of a list of values. The values are sorted and the middle value is returned.
@@ -24,7 +24,7 @@ export const weightedMean = (...values: number[]) => values.reduce((a, b) => a +
  *
  * @param values The values.
  */
-export const median = (...values: number[]) => {
+export const median = (...values: number[]): number => {
 	const numberOfValues = values.length;
 	const sortedValues = values.sort((a, b) => a - b);
 

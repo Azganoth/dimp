@@ -5,7 +5,7 @@
 		"lib": ["ES2020", "DOM", "DOM.Iterable"],
 		"jsx": "react",
 		"sourceMap": true,
-		"outDir": "../public",
+		"outDir": "../build",
 		"moduleResolution": "Node",
 		"baseUrl": "../",
 		"paths": {

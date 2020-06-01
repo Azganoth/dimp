@@ -3,7 +3,9 @@
  *
  * @param canvas The canvas.
  */
-export const getCanvasImage = (canvas: HTMLCanvasElement) => {
+export const getCanvasImage = (canvas: HTMLCanvasElement): ImageData => {
+	// Disabled because the return is guaranteed
+	// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 	return canvas.getContext('2d')!.getImageData(0, 0, canvas.width, canvas.height);
 };
 
@@ -13,9 +15,11 @@ export const getCanvasImage = (canvas: HTMLCanvasElement) => {
  * @param imageData The image data.
  * @param canvas The canvas.
  */
-export const setCanvasImage = (imageData: ImageData, canvas: HTMLCanvasElement) => {
+export const setCanvasImage = (imageData: ImageData, canvas: HTMLCanvasElement): void => {
 	canvas.width = imageData.width;
 	canvas.height = imageData.height;
+	// Disabled because the return is guaranteed
+	// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 	canvas.getContext('2d')!.putImageData(imageData, 0, 0);
 };
 
@@ -24,7 +28,7 @@ export const setCanvasImage = (imageData: ImageData, canvas: HTMLCanvasElement) 
  *
  * @param imageData The image data.
  */
-export const cloneImageData = (imageData: ImageData) =>
+export const cloneImageData = (imageData: ImageData): ImageData =>
 	new ImageData(new Uint8ClampedArray(imageData.data), imageData.width, imageData.height);
 
 /**
@@ -34,4 +38,4 @@ export const cloneImageData = (imageData: ImageData) =>
  * @param y The point y-coordinate.
  * @param width The image width.
  */
-export const indexOfPixel = (x: number, y: number, width: number) => x * 4 + y * width * 4;
+export const indexOfPixel = (x: number, y: number, width: number): number => x * 4 + y * width * 4;
