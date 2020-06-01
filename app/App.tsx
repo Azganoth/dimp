@@ -179,6 +179,7 @@ const App: React.FunctionComponent = () => {
 			<Modal
 				centered
 				destroyOnClose
+				className="histograms"
 				title="Histogramas"
 				visible={histogramVisible}
 				width={600}
@@ -186,6 +187,7 @@ const App: React.FunctionComponent = () => {
 				onCancel={closeHistogram}
 				okButtonProps={{ hidden: true }}
 				cancelButtonProps={{ hidden: true }}
+				style={{ padding: 0 }}
 			>
 				<Row justify="center" align="middle">
 					<Col>
@@ -193,7 +195,7 @@ const App: React.FunctionComponent = () => {
 					</Col>
 
 					<Col span={24}>
-						<Histogram canvasRef={canvas1Ref} />
+						<Histogram width={552} height={180} canvasRef={canvas1Ref} />
 					</Col>
 
 					<Col>
@@ -201,7 +203,7 @@ const App: React.FunctionComponent = () => {
 					</Col>
 
 					<Col span={24}>
-						<Histogram canvasRef={canvas2Ref} />
+						<Histogram width={552} height={180} canvasRef={canvas2Ref} />
 					</Col>
 
 					<Col>
@@ -209,7 +211,7 @@ const App: React.FunctionComponent = () => {
 					</Col>
 
 					<Col span={24}>
-						<Histogram canvasRef={canvas3Ref} />
+						<Histogram width={552} height={180} canvasRef={canvas3Ref} />
 					</Col>
 				</Row>
 			</Modal>

@@ -39,10 +39,16 @@ const CustomTooltip = ({ active, label, payload }: TooltipProps) => {
 };
 
 type HistogramProps = {
+	width: number;
+	height: number;
 	canvasRef: React.MutableRefObject<HTMLCanvasElement | null>;
 };
 
-const Histogram: React.FunctionComponent<HistogramProps> = ({ canvasRef }: HistogramProps) => {
+const Histogram: React.FunctionComponent<HistogramProps> = ({
+	width = 600,
+	height = 200,
+	canvasRef,
+}: HistogramProps) => {
 	const [histogramData, setHistogramData] = useState<HistogramValue[]>([]);
 
 	useEffect(() => {
@@ -62,7 +68,7 @@ const Histogram: React.FunctionComponent<HistogramProps> = ({ canvasRef }: Histo
 	}, [canvasRef]);
 
 	return (
-		<BarChart width={552} height={190} data={histogramData} barCategoryGap={0} barGap={0}>
+		<BarChart width={width} height={height} data={histogramData} barCategoryGap={0} barGap={0}>
 			<CartesianGrid strokeDasharray="3 3" />
 			<XAxis dataKey={(item) => histogramData.indexOf(item)} ticks={[0, 33, 63, 95, 127, 159, 191, 223, 255]} />
 			<YAxis tickFormatter={(value) => (value as number).toLocaleString()} />
