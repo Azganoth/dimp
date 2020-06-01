@@ -131,6 +131,10 @@ module.exports = (webpackEnv) => {
 					exclude: /node_modules/,
 				},
 				{
+					test: /\.node$/,
+					loader: require.resolve('node-loader'),
+				},
+				{
 					oneOf: [
 						{
 							test: /\.css$/,
@@ -156,7 +160,7 @@ module.exports = (webpackEnv) => {
 							options: {
 								name: 'media/[name].[ext]',
 							},
-							exclude: [/\.[jt]sx?$/, /\.html$/, /\.json$/],
+							exclude: [/\.[jt]sx?$/, /\.html$/, /\.json$/, /\.node$/],
 						},
 					],
 				},
@@ -164,7 +168,7 @@ module.exports = (webpackEnv) => {
 		},
 
 		resolve: {
-			extensions: ['.js', '.jsx', '.ts', '.tsx', '.html', '.json'],
+			extensions: ['.js', '.jsx', '.ts', '.tsx', '.html', '.json', '.node'],
 			alias: {
 				app: path.resolve(__dirname, 'app'),
 			},

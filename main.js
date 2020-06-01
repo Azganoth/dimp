@@ -2,6 +2,12 @@ const contextMenu = require('electron-context-menu');
 const { BrowserWindow, app, shell } = require('electron');
 const path = require('path');
 
+if (process.platform === 'win32' && !process.env.OPENCV4NODEJS_DISABLE_AUTOBUILD) {
+	// Disabled because the module is required or not depending on a condition
+	// eslint-disable-next-line global-require
+	process.env.path += `;${require('./node_modules/opencv-build').opencvBinDir}`;
+}
+
 contextMenu();
 
 let win;

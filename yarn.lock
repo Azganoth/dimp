@@ -301,7 +301,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:*, @types/node@npm:^14.0.6":
+"@types/node@npm:*, @types/node@npm:>6, @types/node@npm:^14.0.6":
   version: 14.0.6
   resolution: "@types/node@npm:14.0.6"
   checksum: 2/14c184ce392941d016aa94479eca2d33517756a9e48d0b03ba6e258128b513dc28dc524f85cc0591e12be9d804beff6aadc4b3159555c6ffdd1d1ab8f46d41da
@@ -2812,6 +2812,8 @@ __metadata:
     html-webpack-plugin: ^4.3.0
     less-loader: ^6.1.0
     mini-css-extract-plugin: ^0.9.0
+    node-loader: ^0.6.0
+    opencv4nodejs: 5.2.0
     optimize-css-assets-webpack-plugin: ^5.0.3
     prettier: ^2.0.5
     react: ^16.13.1
@@ -6151,7 +6153,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"nan@npm:^2.12.1":
+"nan@npm:^2.12.1, nan@npm:^2.13.2, nan@npm:^2.14.0":
   version: 2.14.1
   resolution: "nan@npm:2.14.1"
   dependencies:
@@ -6176,6 +6178,15 @@ __metadata:
     snapdragon: ^0.8.1
     to-regex: ^3.0.1
   checksum: 2/2e1440c5705f0192b9d9b46bb682a1832052974dad359ed473b9f555abb5c55a08b3d5ba45d7d37c53a83f64b7f93866292824d3086a150ff7980e71874feb3b
+  languageName: node
+  linkType: hard
+
+"native-node-utils@npm:^0.2.7":
+  version: 0.2.7
+  resolution: "native-node-utils@npm:0.2.7"
+  dependencies:
+    nan: ^2.13.2
+  checksum: 2/534ae62876da2faf91168fc1be97acd957b48c1ff7e77bfa1a77c75ea7c2958fa95e74b402beca8b4446bf239adeaf5fd40e7fa37736fad78f931b10be389ab6
   languageName: node
   linkType: hard
 
@@ -6282,6 +6293,13 @@ __metadata:
     util: ^0.11.0
     vm-browserify: ^1.0.1
   checksum: 2/8da918a5ef93c0bfed8df90bb9d6b12ae08836963aa0b22927eedf6d3eab6e60feb9eae2d394f1eb6d5f0fdd985fb2858b698a3347606b90dfdd5047b5ea6042
+  languageName: node
+  linkType: hard
+
+"node-loader@npm:^0.6.0":
+  version: 0.6.0
+  resolution: "node-loader@npm:0.6.0"
+  checksum: 2/e9c81694cd830c99bb75b535709d45862e0bf6b0dca671846cd59d320396e7b9b5fba1ac55051349e97519d67865482a835f58418bcf0d47d9bf132354b35375
   languageName: node
   linkType: hard
 
@@ -6550,6 +6568,31 @@ __metadata:
   dependencies:
     mimic-fn: ^2.1.0
   checksum: 2/1781c3cf88afbdea849f00fc42dbb560fecf27169135326d615aa2781ae9bdd5a59af82b21d9c3ed348424ec097d2b764b15b43b807d099230d7b8803335a482
+  languageName: node
+  linkType: hard
+
+"opencv-build@npm:^0.1.5":
+  version: 0.1.9
+  resolution: "opencv-build@npm:0.1.9"
+  dependencies:
+    npmlog: ^4.1.2
+  checksum: 2/2520af708f0c08857b8e477a449ac4331bd7a8602718c3f60bf5f61c585942a70d4bcb3c2644f735f07f1eb1e67dafe092c113ea8165b094382cb8b9b0ea7e89
+  languageName: node
+  linkType: hard
+
+"opencv4nodejs@npm:5.2.0":
+  version: 5.2.0
+  resolution: "opencv4nodejs@npm:5.2.0"
+  dependencies:
+    "@types/node": ">6"
+    nan: ^2.14.0
+    native-node-utils: ^0.2.7
+    node-gyp: latest
+    opencv-build: ^0.1.5
+  dependenciesMeta:
+    "@types/node":
+      optional: true
+  checksum: 2/b9a5b208bbd02de6c4690e5562c66954c3121c7b72641e3724052ba4aaf1d019f4e3dbc125a4118a9be5726d88d88157dd233bfaddf7cae7ced50d3cef47aa6a
   languageName: node
   linkType: hard
 

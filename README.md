@@ -24,6 +24,12 @@ App for Digital Image Processing algorithms testing. 🧪
 
 `yarn type` to check for type errors
 
+### 📝 Notes for development in version @7.0.1+
+
+- **Visual Studio Build Tools 2017 is needed for development after @7.0.1.** More info on [opencv4nodejs](https://www.npmjs.com/package/opencv4nodejs).
+- **On Windows**, long paths need to be enabled by git to execute `yarn dist`, which can be done by `git config --global core.longpaths true`.
+- Remember to execute `yarn electron-rebuild -w opencv4nodejs` after each dependency update/install.
+
 ## 🖼️ Screenshots
 
 ### Interface
