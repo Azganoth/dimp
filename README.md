@@ -88,6 +88,18 @@ App for Digital Image Processing algorithms testing. 🧪
 
 ![Equalization](/screenshots/dimp-equalization.png)
 
+### Edge detection (Sobel)
+
+![Edge detection (Sobel)](/screenshots/dimp-edge-detection-sobel.png)
+
+### Edge detection (Laplace)
+
+![Edge detection (Laplace)](/screenshots/dimp-edge-detection-laplace.png)
+
+### Edge detection (Canny)
+
+![Edge detection (Canny)](/screenshots/dimp-edge-detection-canny.png)
+
 ### Challenge (Border Marking)
 
 ![Challenge (Border Drawing)](/screenshots/dimp-challenge-border-marking.png)
