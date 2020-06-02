@@ -471,6 +471,75 @@ const Toolbox: React.FunctionComponent<ToolboxProps> = ({
 		forceUpdate();
 	};
 
+	// OPENCV EROSION/DILATION
+
+	const [canvasOpenCVErosionDilationType, setCanvasOpenCVErosionDilationType] = useState(cv.MORPH_RECT);
+	const [canvasOpenCVErosionDilationSize, setCanvasOpenCVErosionDilationSize] = useState(14);
+
+	const canvasOpenCVErosion = async () => {
+		const { current: canvas } = targetCanvasRef;
+		const { current: canvas3 } = canvas3Ref;
+
+		if (!canvas || !canvas3) {
+			notification.error({ message: MESSAGES.INTERNAL_ERROR });
+			return;
+		}
+
+		if (!canvas.width || !canvas.height) {
+			notification.info({ message: MESSAGES.empty(canvas.dataset.title ?? '') });
+			return;
+		}
+
+		const srcMat = cv.imdecode(Buffer.from(canvas.toDataURL().replace(`data:image/png;base64,`, ''), 'base64'));
+
+		const erosionMat = srcMat.erode(
+			cv.getStructuringElement(
+				canvasOpenCVErosionDilationType,
+				new cv.Size(2 * canvasOpenCVErosionDilationSize + 1, 2 * canvasOpenCVErosionDilationSize + 1),
+				new cv.Point2(canvasOpenCVErosionDilationSize, canvasOpenCVErosionDilationSize)
+			)
+		);
+
+		setCanvasImage(
+			new ImageData(new Uint8ClampedArray(erosionMat.cvtColor(cv.COLOR_BGR2RGBA).getData()), srcMat.cols, srcMat.rows),
+			canvas3
+		);
+
+		forceUpdate();
+	};
+
+	const canvasOpenCVDilation = async () => {
+		const { current: canvas } = targetCanvasRef;
+		const { current: canvas3 } = canvas3Ref;
+
+		if (!canvas || !canvas3) {
+			notification.error({ message: MESSAGES.INTERNAL_ERROR });
+			return;
+		}
+
+		if (!canvas.width || !canvas.height) {
+			notification.info({ message: MESSAGES.empty(canvas.dataset.title ?? '') });
+			return;
+		}
+
+		const srcMat = cv.imdecode(Buffer.from(canvas.toDataURL().replace(`data:image/png;base64,`, ''), 'base64'));
+
+		const erosionMat = srcMat.dilate(
+			cv.getStructuringElement(
+				canvasOpenCVErosionDilationType,
+				new cv.Size(2 * canvasOpenCVErosionDilationSize + 1, 2 * canvasOpenCVErosionDilationSize + 1),
+				new cv.Point2(canvasOpenCVErosionDilationSize, canvasOpenCVErosionDilationSize)
+			)
+		);
+
+		setCanvasImage(
+			new ImageData(new Uint8ClampedArray(erosionMat.cvtColor(cv.COLOR_BGR2RGBA).getData()), srcMat.cols, srcMat.rows),
+			canvas3
+		);
+
+		forceUpdate();
+	};
+
 	return (
 		<Layout style={{ height: '100%', background: 'white' }}>
 			<Header style={{ padding: '1rem' }}>
@@ -529,7 +598,7 @@ const Toolbox: React.FunctionComponent<ToolboxProps> = ({
 					</Col>
 				</Row>
 
-				<Tabs defaultActiveKey="1">
+				<Tabs defaultActiveKey="9">
 					<TabPane tab="Negativa" key="1">
 						<Row justify="center">
 							<Col>
@@ -871,6 +940,74 @@ const Toolbox: React.FunctionComponent<ToolboxProps> = ({
 							<Col>
 								<Button type="primary" size="large" icon={<FireFilled />} onClick={() => canvasOpenCVCanny()}>
 									Canny
+								</Button>
+							</Col>
+						</Row>
+					</TabPane>
+
+					<TabPane tab="OpenCV - Erosão e Dilatação" key="9">
+						<Row gutter={[0, 16]} justify="center" align="middle">
+							<Col>
+								<Text strong>Tipo</Text>
+							</Col>
+						</Row>
+
+						<Row gutter={[0, 16]} justify="center">
+							<Col>
+								<Radio.Group
+									buttonStyle="solid"
+									size="large"
+									value={canvasOpenCVErosionDilationType}
+									onChange={(e) => setCanvasOpenCVErosionDilationType(e.target.value)}
+								>
+									<Radio.Button value={cv.MORPH_RECT}>Rect</Radio.Button>
+									<Radio.Button value={cv.MORPH_CROSS}>Cruz</Radio.Button>
+									<Radio.Button value={cv.MORPH_ELLIPSE}>Elipse</Radio.Button>
+								</Radio.Group>
+							</Col>
+						</Row>
+
+						<Row gutter={[0, 16]} justify="center" align="middle">
+							<Col>
+								<Text strong>Tamanho</Text>
+							</Col>
+						</Row>
+
+						<Row gutter={[0, 16]}>
+							<Col span={24}>
+								<SliderInput
+									value={canvasOpenCVErosionDilationSize}
+									onChange={setCanvasOpenCVErosionDilationSize}
+									min={0}
+									max={21}
+									inputSpan={6}
+									sliderProps={{
+										marks: {
+											0: '0',
+											7: '7',
+											14: '14',
+											21: '21',
+										},
+									}}
+									inputProps={{
+										size: 'large',
+									}}
+								/>
+							</Col>
+						</Row>
+
+						<Row gutter={[0, 16]} justify="center">
+							<Col>
+								<Button type="primary" size="large" icon={<FireFilled />} onClick={() => canvasOpenCVErosion()}>
+									Erosão
+								</Button>
+							</Col>
+						</Row>
+
+						<Row justify="center">
+							<Col>
+								<Button type="primary" size="large" icon={<FireFilled />} onClick={() => canvasOpenCVDilation()}>
+									Dilatação
 								</Button>
 							</Col>
 						</Row>
