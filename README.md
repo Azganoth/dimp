@@ -100,6 +100,30 @@ App for Digital Image Processing algorithms testing. 🧪
 
 ![Edge detection (Canny)](/screenshots/dimp-edge-detection-canny.png)
 
+### Erosion (React)
+
+![Erosion (React)](/screenshots/dimp-erosion-rect.png)
+
+### Erosion (Cross)
+
+![Erosion (Cross)](/screenshots/dimp-erosion-cross.png)
+
+### Erosion (Ellipse)
+
+![Erosion (Ellipse)](/screenshots/dimp-erosion-ellipse.png)
+
+### Dilation (React)
+
+![Dilation (React)](/screenshots/dimp-Dilation-rect.png)
+
+### Dilation (Cross)
+
+![Dilation (Cross)](/screenshots/dimp-Dilation-cross.png)
+
+### Dilation (Ellipse)
+
+![Dilation (Ellipse)](/screenshots/dimp-Dilation-ellipse.png)
+
 ### Challenge (Border Marking)
 
 ![Challenge (Border Drawing)](/screenshots/dimp-challenge-border-marking.png)
