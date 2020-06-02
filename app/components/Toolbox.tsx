@@ -4,6 +4,7 @@ import { CloseOutlined, DownloadOutlined, FireFilled, GithubOutlined, UploadOutl
 import { remote } from 'electron';
 import path from 'path';
 import { promises as fs } from 'fs';
+import cv from 'opencv4nodejs';
 
 import ColorPicker from 'app/components/ui/ColorPicker';
 import SliderInput from 'app/components/ui/SliderInput';
@@ -361,6 +362,115 @@ const Toolbox: React.FunctionComponent<ToolboxProps> = ({
 		forceUpdate();
 	};
 
+	// OPENCV EDGE DETECTION
+
+	const canvasOpenCVSobel = async () => {
+		const { current: canvas } = targetCanvasRef;
+		const { current: canvas3 } = canvas3Ref;
+
+		if (!canvas || !canvas3) {
+			notification.error({ message: MESSAGES.INTERNAL_ERROR });
+			return;
+		}
+
+		if (!canvas.width || !canvas.height) {
+			notification.info({ message: MESSAGES.empty(canvas.dataset.title ?? '') });
+			return;
+		}
+
+		const srcMat = cv.imdecode(Buffer.from(canvas.toDataURL().replace(`data:image/png;base64,`, ''), 'base64'));
+
+		// apply gaussian blur to remove noise, convert to grayscale
+		const greyMat = cv.gaussianBlur(srcMat, new cv.Size(3, 3), 0, 0, cv.BORDER_DEFAULT).cvtColor(cv.COLOR_BGR2GRAY);
+
+		// generate gradient x and y
+		const gradX = greyMat.sobel(cv.CV_16S, 1, 0, 3, 1, 0, cv.BORDER_DEFAULT).convertScaleAbs(0.5, 0.5);
+		const gradY = greyMat.sobel(cv.CV_16S, 0, 1, 3, 1, 0, cv.BORDER_DEFAULT).convertScaleAbs(0.5, 0.5);
+
+		// calculate total gradient (approximate)
+		const detectedEdgesMat = cv.addWeighted(gradX, 0.5, gradY, 0.5, 0);
+
+		setCanvasImage(
+			new ImageData(
+				new Uint8ClampedArray(detectedEdgesMat.cvtColor(cv.COLOR_GRAY2RGBA).getData()),
+				srcMat.cols,
+				srcMat.rows
+			),
+			canvas3
+		);
+
+		forceUpdate();
+	};
+
+	const canvasOpenCVLaplace = async () => {
+		const { current: canvas } = targetCanvasRef;
+		const { current: canvas3 } = canvas3Ref;
+
+		if (!canvas || !canvas3) {
+			notification.error({ message: MESSAGES.INTERNAL_ERROR });
+			return;
+		}
+
+		if (!canvas.width || !canvas.height) {
+			notification.info({ message: MESSAGES.empty(canvas.dataset.title ?? '') });
+			return;
+		}
+
+		const srcMat = cv.imdecode(Buffer.from(canvas.toDataURL().replace(`data:image/png;base64,`, ''), 'base64'));
+
+		// apply gaussian blur to remove noise, convert to grayscale
+		const greyMat = cv.gaussianBlur(srcMat, new cv.Size(3, 3), 0, 0, cv.BORDER_DEFAULT).cvtColor(cv.COLOR_BGR2GRAY);
+
+		// detect edges with laplacian
+		const detectedEdgesMat = greyMat.laplacian(cv.CV_16S, 3, 1, 0, cv.BORDER_DEFAULT).convertScaleAbs(0.5, 0.5);
+
+		setCanvasImage(
+			new ImageData(
+				new Uint8ClampedArray(detectedEdgesMat.cvtColor(cv.COLOR_GRAY2RGBA).getData()),
+				srcMat.cols,
+				srcMat.rows
+			),
+			canvas3
+		);
+
+		forceUpdate();
+	};
+
+	const [canvasOpenCVCannyThreshold, setCanvasOpenCVCannyThreshold] = useState(50);
+
+	const canvasOpenCVCanny = async () => {
+		const { current: canvas } = targetCanvasRef;
+		const { current: canvas3 } = canvas3Ref;
+
+		if (!canvas || !canvas3) {
+			notification.error({ message: MESSAGES.INTERNAL_ERROR });
+			return;
+		}
+
+		if (!canvas.width || !canvas.height) {
+			notification.info({ message: MESSAGES.empty(canvas.dataset.title ?? '') });
+			return;
+		}
+
+		const srcMat = cv.imdecode(Buffer.from(canvas.toDataURL().replace(`data:image/png;base64,`, ''), 'base64'));
+
+		// convert to greyscale, reduce noise with a 3x3 kernel, detect edges with canny
+		const detectedEdgesMat = cv
+			.blur(srcMat.cvtColor(cv.COLOR_BGR2GRAY), new cv.Size(3, 3))
+			.canny(canvasOpenCVCannyThreshold, 100);
+
+		setCanvasImage(
+			new ImageData(
+				new Uint8ClampedArray(detectedEdgesMat.cvtColor(cv.COLOR_GRAY2RGBA).getData()),
+				srcMat.cols,
+				srcMat.rows
+			),
+			canvas3
+		);
+
+		forceUpdate();
+	};
+
 	return (
 		<Layout style={{ height: '100%', background: 'white' }}>
 			<Header style={{ padding: '1rem' }}>
@@ -711,6 +821,57 @@ const Toolbox: React.FunctionComponent<ToolboxProps> = ({
 									placement="bottomRight"
 									colorPickerProps={{ disableAlpha: true }}
 								/>
+							</Col>
+						</Row>
+					</TabPane>
+
+					<TabPane tab="OpenCV - Detecção de Bordas" key="8">
+						<Row gutter={[0, 16]} justify="center">
+							<Col>
+								<Button type="primary" size="large" icon={<FireFilled />} onClick={() => canvasOpenCVSobel()}>
+									Sobel
+								</Button>
+							</Col>
+						</Row>
+
+						<Row gutter={[0, 16]} justify="center">
+							<Col>
+								<Button type="primary" size="large" icon={<FireFilled />} onClick={() => canvasOpenCVLaplace()}>
+									Laplace
+								</Button>
+							</Col>
+						</Row>
+
+						<Row gutter={[0, 16]}>
+							<Col span={24}>
+								<SliderInput
+									value={canvasOpenCVCannyThreshold}
+									onChange={setCanvasOpenCVCannyThreshold}
+									min={0}
+									max={1000}
+									inputSpan={6}
+									sliderProps={{
+										marks: {
+											0: '0',
+											200: '200',
+											400: '400',
+											600: '600',
+											800: '800',
+											1000: '1000',
+										},
+									}}
+									inputProps={{
+										size: 'large',
+									}}
+								/>
+							</Col>
+						</Row>
+
+						<Row justify="center">
+							<Col>
+								<Button type="primary" size="large" icon={<FireFilled />} onClick={() => canvasOpenCVCanny()}>
+									Canny
+								</Button>
 							</Col>
 						</Row>
 					</TabPane>
