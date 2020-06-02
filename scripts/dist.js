@@ -48,12 +48,12 @@ process.env.NODE_ENV = 'production';
 			await packager({
 				dir: path.resolve(__dirname, '..'),
 				out: path.resolve(__dirname, '../dist'),
-				platform: ['darwin', 'linux', 'win32'],
+				platform: ['linux', 'win32'],
 				arch: 'all',
 				icon: path.resolve(__dirname, '../build/media/icon'),
 				afterCopy: [
-					// cleanup package json
 					async (buildPath, electronVersion, platform, arch, callback) => {
+						// cleanup package json
 						const packageJson = JSON.parse(await fs.readFile(path.resolve(buildPath, 'package.json'), 'utf8'));
 
 						delete packageJson.scripts;
@@ -61,16 +61,10 @@ process.env.NODE_ENV = 'production';
 
 						await fs.writeFile(path.join(buildPath, 'package.json'), JSON.stringify(packageJson, null, 2));
 
-						callback();
-					},
-					// install dependencies
-					async (buildPath, electronVersion, platform, arch, callback) => {
+						// install dependencies
 						await promisify(exec)('npm install', { cwd: buildPath });
 
-						callback();
-					},
-					// rebuild native node modules
-					async (buildPath, electronVersion, platform, arch, callback) => {
+						// rebuild native node modules
 						await rebuild({ buildPath, electronVersion, arch });
 
 						callback();
